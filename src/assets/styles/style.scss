@@ -1,0 +1,17 @@
+$primary: #6200ea; // morado estilo Vuetify
+$secondary: #03dac6;
+$body-bg: #121212; // fondo oscuro
+$body-color: #f8f9fa;
+
+// 2) Importar Bootstrap
+@import "bootstrap/scss/bootstrap";
+
+// 3) Estilos extra globales
+html,
+body {
+    height: 100%;
+}
+
+.v-application {
+    font-family: 'Roboto', sans-serif;
+}
