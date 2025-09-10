@@ -95,10 +95,11 @@ type Item = { title: string; icon: string; to: RouteLocationNamedRaw }
 
 const items: Item[] = [
   { title: 'Inicio',  icon: 'mdi-home-outline',  to: { name: 'home' } },
-  { title: 'Flotillas',  icon: 'mdi-home-outline',  to: { name: 'fleets' } },
-  { title: 'Operadores',  icon: 'mdi-home-outline',  to: { name: 'operators' } },
-  { title: 'Pasajeros',  icon: 'mdi-home-outline',  to: { name: 'passengers' } },
+  { title: 'Flotillas',  icon: 'mdi-home-outline',  to: { name: 'fleets-list' } },
+  { title: 'Operadores',  icon: 'mdi-home-outline',  to: { name: 'operators-list' } },
+  { title: 'Pasajeros',  icon: 'mdi-home-outline',  to: { name: 'passengers-list' } },
   { title: 'Facturación',  icon: 'mdi-home-outline',  to: { name: 'invoice' } },
-  { title: 'Ajustes', icon: 'mdi-cog-outline',   to: { name: 'settings' } },
+  { title: 'Programa de recomensas',  icon: 'mdi-home-outline',  to: { name: 'referrals-list' } },
+  { title: 'Ajustes', icon: 'mdi-cog-outline',   to: { name: 'settings-list' } },
 ]
 </script>

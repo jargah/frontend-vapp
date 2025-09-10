@@ -1,40 +1,119 @@
+<!-- src/views/operators/list.vue -->
 <template>
-    <v-card>
-        <v-card-title>Operadores</v-card-title>
-        <v-card-text>Preferencias y configuración.</v-card-text>
-    </v-card>
+    <v-container fluid class="py-6">
+        <div class="d-flex align-center justify-space-between mb-4 ga-3">
+            <h1 class="text-h5 mb-0">Operadores</h1>
+            <v-btn color="primary" prepend-icon="mdi-plus" :to="{ name: 'operators-add' }">Agregar</v-btn>
+        </div>
 
-    <v-card>
-        <Datatable 
-            :items="rows"
-            title="Operadores"
-            @add="onAdd"
-            @view="onView"
-            @edit="onEdit"
-            @delete="onAskDelete"
-            @deleted="onDeleteConfirmed"
-        />
-    </v-card>
+        <v-card rounded="xl" elevation="8">
+            <v-card-title class="d-flex align-center justify-space-between flex-wrap ga-3">
+                <div class="text-subtitle-1">Listado</div>
+                <v-text-field v-model="search" density="comfortable" variant="outlined" placeholder="Buscar…"
+                    prepend-inner-icon="mdi-magnify" clearable hide-details style="min-width:260px" />
+            </v-card-title>
+
+            <v-data-table :headers="headers" :items="filtered" :items-per-page="itemsPerPage" :page="page"
+                @update:page="page = $event" @update:items-per-page="itemsPerPage = $event"
+                :items-per-page-options="[5, 10, 20, 50]" item-key="id" hover class="text-body-2">
+                <template #item.status="{ item }">
+                    <v-chip size="small" :color="item.status === 'ACTIVE' ? 'success' : 'warning'">{{ item.status
+                        }}</v-chip>
+                </template>
+                <template #item.created_at="{ item }">{{ formatDate(item.created_at) }}</template>
+
+                <template #item.actions="{ item }">
+                    <div class="d-flex ga-1">
+                        <v-btn :to="{ name: 'operators-view', params: { id: item.id } }" icon="mdi-eye-outline"
+                            variant="text" />
+                        <v-btn :to="{ name: 'operators-edit', params: { id: item.id } }" icon="mdi-pencil-outline"
+                            variant="text" />
+                        <v-btn icon="mdi-trash-can-outline" variant="text" color="error" @click="openDelete(item)" />
+                    </div>
+                </template>
+
+                <template #no-data>
+                    <v-sheet class="pa-8 text-center w-100">
+                        <v-icon size="36" class="mb-2">mdi-database-off</v-icon>
+                        <div class="text-body-1">Sin registros</div>
+                    </v-sheet>
+                </template>
+            </v-data-table>
+        </v-card>
+
+        <v-dialog v-model="deleteDialog" max-width="420">
+            <v-card rounded="xl">
+                <v-card-item>
+                    <div class="d-flex align-center ga-3">
+                        <v-avatar color="error" size="44"><v-icon size="28">mdi-alert-outline</v-icon></v-avatar>
+                        <div>
+                            <div class="text-h6">Confirmar eliminación</div>
+                            <div class="text-medium-emphasis">Esta acción no se puede deshacer.</div>
+                        </div>
+                    </div>
+                </v-card-item>
+                <v-divider />
+                <v-card-text>¿Eliminar operador <strong>#{{ pendingItem?.id }}</strong> (<em>{{ pendingItem?.name
+                        }}</em>)?</v-card-text>
+                <v-card-actions class="justify-end">
+                    <v-btn variant="text" @click="closeDelete">Cancelar</v-btn>
+                    <v-btn color="error" @click="confirmDelete" prepend-icon="mdi-trash-can-outline">Eliminar</v-btn>
+                </v-card-actions>
+            </v-card>
+        </v-dialog>
+
+        <v-snackbar v-model="snackbar.open" :timeout="2500" color="success">{{ snackbar.msg }}</v-snackbar>
+    </v-container>
 </template>
 
 <script setup lang="ts">
+import { onMounted, ref, computed } from 'vue'
+import { OperatorsService, type Operator } from '@/services/operators.service'
 
-import { ref } from 'vue'
-import type { Row } from '@/types/datatable'
-import Datatable from '@/components/Datatable.vue';
+const headers = [
+    { title: 'ID', key: 'id', width: 70 },
+    { title: 'Nombre', key: 'name' },
+    { title: 'Correo', key: 'email' },
+    { title: 'Teléfono', key: 'phone', width: 150 },
+    { title: 'Status', key: 'status', width: 120 },
+    { title: 'Creación', key: 'created_at', width: 180 },
+    { title: 'Acciones', key: 'actions', width: 140, align: 'end' },
+]
 
-const rows = ref<Row[]>([
-  { id: 1, name: 'Ana Gómez',  email: 'ana@ejemplo.com',  role: 'Admin',  status: true,  createdAt: '2025-08-01', notes: 'Acceso total.' },
-  { id: 2, name: 'Luis Pérez', email: 'luis@ejemplo.com', role: 'Editor', status: false, createdAt: '2025-07-21', notes: 'Pendiente activación.' },
-  { id: 3, name: 'Sara Díaz',  email: 'sara@ejemplo.com', role: 'Viewer', status: true,  createdAt: '2025-07-10' },
-])
+const items = ref<Operator[]>([])
+const search = ref('')
+const page = ref(1)
+const itemsPerPage = ref(10)
 
-function onAdd() { /* abrir modal de creación */ }
-function onView(item: Row) { /* abrir modal de vista */ }
-function onEdit(item: Row) { /* abrir modal de edición */ }
-function onAskDelete(item: Row) { /* opcional: confirmar en el padre */ }
-function onDeleteConfirmed(id: number) {
-  rows.value = rows.value.filter(r => r.id !== id)
+onMounted(async () => { items.value = await OperatorsService.list() })
+
+const filtered = computed(() => {
+    const q = search.value.trim().toLowerCase()
+    if (!q) return items.value
+    return items.value.filter(i =>
+        [i.id, i.name, i.email, i.phone, i.status, formatDate(i.created_at)]
+            .join(' ').toLowerCase().includes(q)
+    )
+})
+
+function formatDate(iso: string) {
+    const d = new Date(iso)
+    return new Intl.DateTimeFormat('es-MX', { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' }).format(d)
 }
 
+/* Eliminar */
+const deleteDialog = ref(false)
+const pendingItem = ref<Operator | null>(null)
+function openDelete(item: Operator) { pendingItem.value = item; deleteDialog.value = true }
+function closeDelete() { deleteDialog.value = false; pendingItem.value = null }
+async function confirmDelete() {
+    if (!pendingItem.value) return
+    await OperatorsService.remove(pendingItem.value.id)
+    items.value = await OperatorsService.list()
+    closeDelete()
+    snackbar.value = { open: true, msg: 'Operador eliminado.' }
+}
+
+/* Snackbar */
+const snackbar = ref({ open: false, msg: '' })
 </script>

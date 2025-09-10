@@ -5,36 +5,36 @@
     </v-card>
 
     <v-card>
-        <Datatable 
-            :items="rows"
-            title="Flotillas"
-            @add="onAdd"
-            @view="onView"
-            @edit="onEdit"
-            @delete="onAskDelete"
-            @deleted="onDeleteConfirmed"
-        />
+        <DataTableCrud :items="rows" viewRouteName="fleets-view" editRouteName="fleets-edit" :headers="headers"
+            :previewFieldsMap="{ 'Nombre': 'name', 'Correo': 'email', 'Estado': 'status' }" :defaultItemsPerPage="10"
+            :itemsPerPageOptions="[5, 10, 20, 50]" @delete="onDelete">
+            <template #toolbar>
+                <v-btn color="primary" prepend-icon="mdi-plus" :to="{ name: 'fleets-add' }">
+                    Agregar
+                </v-btn>
+            </template>
+        </DataTableCrud>
     </v-card>
 </template>
 
 <script setup lang="ts">
 
 import { ref } from 'vue'
-import type { Row } from '@/types/datatable'
-import Datatable from '@/components/Datatable.vue';
+import DataTableCrud from '@/views/fleets/shared/Datatable.vue'
 
-const rows = ref<Row[]>([
-  { id: 1, name: 'Ana Gómez',  email: 'ana@ejemplo.com',  role: 'Admin',  status: true,  createdAt: '2025-08-01', notes: 'Acceso total.' },
-  { id: 2, name: 'Luis Pérez', email: 'luis@ejemplo.com', role: 'Editor', status: false, createdAt: '2025-07-21', notes: 'Pendiente activación.' },
-  { id: 3, name: 'Sara Díaz',  email: 'sara@ejemplo.com', role: 'Viewer', status: true,  createdAt: '2025-07-10' },
+const headers = [
+    { title: 'ID', key: 'id', width: 90 },
+    { title: 'Nombre', key: 'name_contact' },
+    { title: 'Correo', key: 'email' },
+    { title: 'Teléfono', key: 'phone' },
+    { title: 'Creacion', key: 'creation', width: 140 },
+]
+
+const rows = ref([
+    { id: 1, name_contact: 'Jaime Rico', email: 'test.flotilla@gmail.com', phone: '+5213322238886', creation: '2025-08-17 16:57:55' },
 ])
 
-function onAdd() { /* abrir modal de creación */ }
-function onView(item: Row) { /* abrir modal de vista */ }
-function onEdit(item: Row) { /* abrir modal de edición */ }
-function onAskDelete(item: Row) { /* opcional: confirmar en el padre */ }
-function onDeleteConfirmed(id: number) {
-  rows.value = rows.value.filter(r => r.id !== id)
+function onDelete(item: any) {
+    rows.value = rows.value.filter(r => r.id !== item.id)
 }
-
 </script>

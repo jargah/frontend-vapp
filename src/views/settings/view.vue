@@ -1,0 +1,116 @@
+<!-- src/views/configs/view.vue -->
+<template>
+    <v-container fluid class="py-6">
+        <div class="d-flex align-center justify-space-between mb-4 ga-3">
+            <div class="d-flex align-center ga-3">
+                <v-btn variant="text" prepend-icon="mdi-arrow-left" @click="goBack">Volver</v-btn>
+                <h1 class="text-h5 mb-0">Detalle Config #{{ id }}</h1>
+            </div>
+            <v-btn color="primary" prepend-icon="mdi-pencil-outline"
+                :to="{ name: 'settings-edit', params: { id } }">Editar</v-btn>
+        </div>
+
+        <v-card rounded="xl" elevation="8">
+            <template v-if="loading">
+                <v-skeleton-loader type="article, list-item-two-line" class="pa-6" />
+            </template>
+            <template v-else-if="error">
+                <v-alert type="error" variant="tonal" class="ma-6">{{ error }}</v-alert>
+            </template>
+            <template v-else-if="!item">
+                <v-sheet class="pa-10 text-center">
+                    <v-icon size="48" class="mb-2">mdi-file-search-outline</v-icon>
+                    <div class="text-h6">No se encontró la configuración.</div>
+                </v-sheet>
+            </template>
+            <template v-else>
+                <v-card-item>
+                    <div class="d-flex align-center ga-4">
+                        <v-avatar color="primary" size="56"><v-icon size="32">mdi-cog-outline</v-icon></v-avatar>
+                        <div>
+                            <div class="text-h6">{{ item.name }}</div>
+                            <div class="text-medium-emphasis">ID: {{ item.id }}</div>
+                        </div>
+                    </div>
+                </v-card-item>
+                <v-card-text>
+                    <v-row>
+                        <v-col cols="12" md="6">
+                            <v-sheet class="pa-4 rounded-lg border">
+                                <div class="text-overline mb-2">Valor</div>
+                                <div class="text-body-1">{{ item.value }}</div>
+                            </v-sheet>
+                        </v-col>
+                        <v-col cols="12" md="6">
+                            <v-sheet class="pa-4 rounded-lg border">
+                                <div class="text-overline mb-2">Status</div>
+                                <v-chip :color="item.status === 'ACTIVE' ? 'success' : 'warning'" size="small">
+                                    {{ item.status }}
+                                </v-chip>
+                            </v-sheet>
+                        </v-col>
+                        <v-col cols="12" md="6">
+                            <v-sheet class="pa-4 rounded-lg border">
+                                <div class="text-overline mb-2">Creación</div>
+                                <div class="text-body-1">{{ formatDate(item.created_at) }}</div>
+                            </v-sheet>
+                        </v-col>
+                    </v-row>
+                </v-card-text>
+                <v-card-actions class="justify-end">
+                    <v-btn variant="text" @click="goBack">Cerrar</v-btn>
+                    <v-btn color="primary" :to="{ name: 'settings-edit', params: { id } }"
+                        prepend-icon="mdi-pencil-outline">Editar</v-btn>
+                </v-card-actions>
+            </template>
+        </v-card>
+    </v-container>
+</template>
+
+<script setup lang="ts">
+import { ref, onMounted, watch } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
+import { ConfigsService, type ConfigItem } from '@/services/configs.service'
+
+const route = useRoute()
+const router = useRouter()
+const id = ref<number>(Number(route.params.id))
+
+const loading = ref(true)
+const error = ref<string | null>(null)
+const item = ref<ConfigItem | null>(null)
+
+onMounted(load)
+watch(() => route.params.id, () => { id.value = Number(route.params.id); load() })
+
+async function load() {
+    try {
+        loading.value = true
+        error.value = null
+        item.value = await ConfigsService.getById(id.value)
+        if (!item.value) error.value = 'No encontrado.'
+    } catch (e: any) {
+        error.value = e?.message ?? 'Error al cargar.'
+    } finally {
+        loading.value = false
+    }
+}
+
+function formatDate(iso: string) {
+    const d = new Date(iso)
+    return new Intl.DateTimeFormat('es-MX', {
+        year: 'numeric', month: '2-digit', day: '2-digit',
+        hour: '2-digit', minute: '2-digit'
+    }).format(d)
+}
+function goBack() {
+    if (history.length > 1) router.back()
+    else router.push({ name: 'settings-list' })
+}
+</script>
+
+<style scoped>
+.border {
+    border: 1px solid rgba(0, 0, 0, .08);
+}
+</style>

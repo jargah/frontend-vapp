@@ -5,6 +5,7 @@ import fleets from './modules/fleets'
 import operators from './modules/operators'
 import passengers from './modules/passengers'
 import invoice from './modules/invoice'
+import referral from './modules/referral'
 
 const Home = () => import('@/views/HomeView.vue')
 const Profile = () => import('@/views/ProfileView.vue')
@@ -34,6 +35,7 @@ const routes = [
     ...operators,
     ...passengers,
     ...invoice,
+    ...referral,
     ...settings
 ]
 
