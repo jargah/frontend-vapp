@@ -15,8 +15,23 @@
                     <img src="https://i.pravatar.cc/100?img=12" alt="User" />
                 </v-avatar>
                 <div v-if="!rail" class="text-body-2">
-                    <div class="text-subtitle-2">{{ email }}</div>
-                    <div class="text-medium-emphasis">Admin</div>
+                    <div class="text-subtitle-2">
+                        <template v-if="user.rol_id == 1">
+                            Super Admin
+                        </template>
+                        <template v-if="user.rol_id == 2">
+                            Admin
+                        </template>
+                        <template v-if="user.rol_id == 3">
+                            Flotila
+                        </template>
+                        <template v-if="user.rol_id == 4">
+                            Usuario
+                        </template>
+                    </div>
+                    <div class="text-medium-emphasis">
+                        {{ user.username  }}
+                    </div>
                 </div>
                 <v-spacer />
             </div>
@@ -84,7 +99,7 @@ function toggleTheme() {
 }
 
 // --- Auth
-const email = computed(() => store.getters['auth/userEmail'])
+const user = computed(() => store.getters['auth/user'])
 function onLogout() {
     store.dispatch('auth/logout')
     window.location.href = '/login'
@@ -94,12 +109,13 @@ function onLogout() {
 type Item = { title: string; icon: string; to: RouteLocationNamedRaw }
 
 const items: Item[] = [
-  { title: 'Inicio',  icon: 'mdi-home-outline',  to: { name: 'home' } },
-  { title: 'Flotillas',  icon: 'mdi-home-outline',  to: { name: 'fleets-list' } },
-  { title: 'Operadores',  icon: 'mdi-home-outline',  to: { name: 'operators-list' } },
-  { title: 'Pasajeros',  icon: 'mdi-home-outline',  to: { name: 'passengers-list' } },
-  { title: 'Facturación',  icon: 'mdi-home-outline',  to: { name: 'invoice' } },
-  { title: 'Programa de recomensas',  icon: 'mdi-home-outline',  to: { name: 'referrals-list' } },
-  { title: 'Ajustes', icon: 'mdi-cog-outline',   to: { name: 'settings-list' } },
+    { title: 'Inicio', icon: 'mdi-home-outline', to: { name: 'home' } },
+    { title: 'Prospectos', icon: 'mdi-home-outline', to: { name: 'prospects-list' } },
+    /* { title: 'Flotillas',  icon: 'mdi-home-outline',  to: { name: 'fleets-list' } },
+    { title: 'Operadores',  icon: 'mdi-home-outline',  to: { name: 'operators-list' } },
+    { title: 'Pasajeros',  icon: 'mdi-home-outline',  to: { name: 'passengers-list' } },
+    { title: 'Facturación',  icon: 'mdi-home-outline',  to: { name: 'invoice' } },
+    { title: 'Programa de recomensas',  icon: 'mdi-home-outline',  to: { name: 'referrals-list' } },
+    { title: 'Ajustes', icon: 'mdi-cog-outline',   to: { name: 'settings-list' } }, */
 ]
 </script>

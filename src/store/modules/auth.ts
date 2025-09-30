@@ -1,44 +1,113 @@
 import type { Module } from 'vuex'
+import { getJson, postJson, setDefaultHeaders } from '@/utils/http'
+import { router } from '@/router/index'
 
-export type User = { email: string } | null
-export type AuthState = {
-    token: string | null
-    user: User
+
+type Profile = {
+    email: string,
+    phone: string
+    rol_id: number
+    id: number
+    username: string
 }
 
-const token = localStorage.getItem('auth_token')
-const user = localStorage.getItem('auth_user')
+export type AuthState = {
+    token: string | null
+    appid: string | null
+    user: Profile | null,
+}
+
+/* const token = localStorage.getItem('auth_token')
+const user = localStorage.getItem('auth_user') */
 
 export const auth: Module<AuthState, any> = {
     namespaced: true,
     state: () => ({
-        token,
-        user: user ? JSON.parse(user) : null,
+        token: null,
+        appid: null,
+        user: null,
     }),
     getters: {
+        appid: (state) => state.appid,
+        token: (state) => state.token,
         isAuthenticated: (s) => !!s.token,
-        userEmail: (s) => s.user?.email || 'usuario',
+        user: (state) => state.user,
     },
     mutations: {
-        SET_SESSION(s, { token, user }: { token: string; user: User }) {
-            s.token = token
-            s.user = user
-            localStorage.setItem('auth_token', token)
-            localStorage.setItem('auth_user', JSON.stringify(user))
+        SET_PROFILE(state, payload) {
+            state.user = payload
         },
-        CLEAR_SESSION(s) {
-            s.token = null
-            s.user = null
-            localStorage.removeItem('auth_token')
-            localStorage.removeItem('auth_user')
+        SET_SESSION(state, payload) {
+            state.appid = payload
+            localStorage.setItem('appid', payload.appid)
+            localStorage.setItem('session', payload.token)
         },
+        GET_SESSION(state) {
+            const appid = localStorage.getItem('appid')
+            const session = localStorage.getItem('session')
+            state.appid = appid
+            state.token = session
+        },
+        CLEAR_SESSION(state) {
+            state.appid = null
+            state.token = null
+            state.user = null
+            localStorage.removeItem('appid')
+        },
+
     },
     actions: {
-        async login({ commit }, { email, password }: { email: string; password: string }) {
-            // Simulación; reemplaza por tu API
-            await new Promise((r) => setTimeout(r, 400))
-            commit('SET_SESSION', { token: 'demo-token', user: { email } })
+        async login({ commit }, { username, password }: { username: string; password: string }) {
+
+            const result = await postJson<{ token: string, appid: string }>('administrator/auth/login', {
+                username, password
+            });
+
+            if (!result.success) {
+                commit('SET_ALERT', { 
+                    open: true,
+                    type: 'error',
+                    title: 'Credenciales incorrectas',
+                    message: 'Verifica tus credenciales e intentalo nuevamente',
+                }, { root: true })
+                return null
+            }
+
+            
+            commit('SET_SESSION', result.data)
+
         },
+
+        async me({ commit, rootGetters }, payload) {
+
+            setDefaultHeaders({
+                'session': rootGetters['auth/token']
+            })
+
+            const result = await getJson<{me: Profile }>('administrator/profile/me');
+
+            if(!result) {
+                localStorage.removeItem('appid')
+                /* router.push({
+                    name: 'login'
+                }) */
+                return
+            }
+
+            if (!result.success) {
+                commit('SET_ALERT', { 
+                    open: true,
+                    type: 'error',
+                    title: 'Credenciales incorrectas',
+                    message: 'Verifica tus credenciales e intentalo nuevamente',
+                }, { root: true })
+                return null
+            }
+
+            commit('SET_PROFILE', result.data.me)
+
+        },
+
         logout({ commit }) {
             commit('CLEAR_SESSION')
         },

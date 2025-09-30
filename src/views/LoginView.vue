@@ -6,10 +6,10 @@
                     <v-card-title class="text-h6 text-center">Iniciar sesión</v-card-title>
                     <v-card-text>
                         <Form :validation-schema="schema" @submit="onSubmit" v-slot="{ meta }">
-                            <Field name="email" v-slot="{ field, errors }">
-                                <v-text-field v-bind="field" label="Correo electrónico" type="email"
-                                    autocomplete="email" :error="!!errors.length" :error-messages="errors"
-                                    prepend-inner-icon="mdi-email-outline" />
+                            <Field name="username" v-slot="{ field, errors }">
+                                <v-text-field v-bind="field" label="Usuario" type="username" autocomplete="username"
+                                    :error="!!errors.length" :error-messages="errors"
+                                    prepend-inner-icon="mdi-account-outline" />
                             </Field>
 
                             <Field name="password" v-slot="{ field, errors }">
@@ -44,7 +44,7 @@ const show = ref(false)
 const loading = ref(false)
 
 const schema = yup.object({
-    email: yup.string().required('El correo es obligatorio').email('Ingresa un correo válido'),
+    username: yup.string().required('El usuario es obligatorio'),
     password: yup.string().required('La contraseña es obligatoria').min(6, 'Mínimo 6 caracteres'),
 })
 
