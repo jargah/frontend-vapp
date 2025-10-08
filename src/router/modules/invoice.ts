@@ -2,12 +2,22 @@
 const invoice = [
     {
         path: '/invoice',
-        name: 'invoice',
-        component: () => import("@/views/invoice/index.vue"),
+        component: () => import('@/views/page.vue'),
         meta: { 
-            public: true,
-            layout: 'default-layout' 
-        }
+            public: false, 
+            layout: 'default-layout',
+            access: [1,2,4]
+        },
+        children: [
+            { 
+                path: '', 
+                name: 'invoice-list', 
+                component: () => import(/* webpackChunkName: "invoice-list" */ '@/views/invoice/index.vue'),
+                meta: {
+                    
+                }
+            }
+        ],
     }
 ]
 

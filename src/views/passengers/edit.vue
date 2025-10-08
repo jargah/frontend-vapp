@@ -1,193 +1,285 @@
-<!-- src/views/passengers/edit.vue -->
+<!-- src/views/configs/add.vue -->
 <template>
-    <v-container fluid class="py-6">
-        <div class="d-flex align-center justify-space-between mb-4 ga-3">
-            <div class="d-flex align-center ga-3">
-                <v-btn variant="text" prepend-icon="mdi-arrow-left" @click="goBack">Volver</v-btn>
-                <h1 class="text-h5 mb-0">Editar Pasajero #{{ id }}</h1>
-            </div>
-            <v-btn color="secondary" variant="tonal" prepend-icon="mdi-eye-outline"
-                :to="{ name: 'passengers-view', params: { id } }">Ver</v-btn>
-        </div>
+  <v-container fluid class="py-6">
+    <div class="d-flex align-center justify-space-between mb-4 ga-3">
+      <div class="d-flex align-center ga-3">
+        <v-btn variant="text" prepend-icon="mdi-arrow-left" @click="goBack">Volver</v-btn>
+        <h1 class="text-h5 mb-0">Editar Usuario</h1>
+      </div>
+    </div>
 
-        <v-card rounded="xl" elevation="8">
-            <template v-if="loading">
-                <v-skeleton-loader class="pa-6" type="article, list-item-two-line" />
-            </template>
-            <template v-else-if="error">
-                <v-alert type="error" variant="tonal" class="ma-6">{{ error }}</v-alert>
-            </template>
-            <template v-else>
-                <v-form ref="formRef" @submit.prevent="onSubmit">
-                    <v-card-text>
-                        <v-row dense>
-                            <v-col cols="12" md="4">
-                                <v-text-field v-model="form.name" label="Nombre" variant="outlined"
-                                    :rules="[rules.required, rules.min(2)]" autocomplete="off" />
-                            </v-col>
-                            <v-col cols="12" md="4">
-                                <v-text-field v-model="form.email" label="Correo" variant="outlined"
-                                    :rules="[rules.required, rules.email]" autocomplete="off" />
-                            </v-col>
-                            <v-col cols="12" md="4">
-                                <v-text-field v-model="form.phone" label="Teléfono (E.164)" variant="outlined"
-                                    placeholder="+5213312345678" :rules="[rules.phone]"
-                                    @blur="form.phone = normalizePhone(form.phone)" />
-                            </v-col>
+    <v-card rounded="xl" elevation="8">
+      <Form @submit="onSubmit">
+        <v-card-text>
+          <v-row dense>
+            <!-- rol_id -->
+            <v-col cols="12" md="6">
+              <v-select
+                v-model="rol_id"
+                label="Roles"
+                variant="outlined"
+                :items="roles"
+                item-title="label"
+                item-value="value"
+                :error="!!errors.rol_id"
+                :error-messages="errors.rol_id ? [errors.rol_id] : []"
+              />
+            </v-col>
 
-                            <v-col cols="12" md="4">
-                                <v-text-field v-model.number="form.trips_count" label="Viajes realizados" type="number"
-                                    variant="outlined" :rules="[rules.minValue(0)]" />
-                            </v-col>
-                            <v-col cols="12" md="4">
-                                <v-select v-model="form.status" label="Status" variant="outlined" :items="statusItems"
-                                    :rules="[rules.required]" />
-                            </v-col>
-                            <v-col cols="12" md="4">
-                                <v-text-field :model-value="formatDate(createdAt)" label="Creación" variant="outlined"
-                                    readonly />
-                            </v-col>
-                        </v-row>
+            <!-- first_name -->
+            <v-col cols="12" md="6">
+              <v-text-field
+                v-model="first_name"
+                label="Nombre"
+                variant="outlined"
+                autocomplete="off"
+                :error="!!errors.first_name"
+                :error-messages="errors.first_name ? [errors.first_name] : []"
+              />
+            </v-col>
 
-                        <v-divider class="my-6" />
+            <!-- last_name -->
+            <v-col cols="12" md="6">
+              <v-text-field
+                v-model="last_name"
+                label="Apellido"
+                variant="outlined"
+                autocomplete="off"
+                :error="!!errors.last_name"
+                :error-messages="errors.last_name ? [errors.last_name] : []"
+              />
+            </v-col>
 
-                        <div class="text-subtitle-1 mb-2 d-flex align-center ga-2">
-                            <v-icon>mdi-file-document-edit-outline</v-icon> Datos Fiscales
-                        </div>
-                        <v-row dense>
-                            <v-col cols="12" md="4">
-                                <v-text-field v-model="form.tax.rfc" label="RFC" variant="outlined"
-                                    :rules="[rules.required, rules.rfc]" @blur="form.tax.rfc = toRFC(form.tax.rfc)" />
-                            </v-col>
-                            <v-col cols="12" md="8">
-                                <v-text-field v-model="form.tax.business_name" label="Razón social" variant="outlined"
-                                    :rules="[rules.required]" />
-                            </v-col>
-                            <v-col cols="12" md="6">
-                                <v-select v-model="form.tax.regime" label="Régimen fiscal" variant="outlined"
-                                    :items="regimeItems" :rules="[rules.required]" />
-                            </v-col>
-                            <v-col cols="12" md="3">
-                                <v-text-field v-model="form.tax.zip" label="CP" variant="outlined"
-                                    :rules="[rules.required, rules.cp]" maxlength="5" />
-                            </v-col>
-                        </v-row>
-                    </v-card-text>
+            <!-- username -->
+            <v-col cols="12" md="6">
+              <v-text-field
+                v-model="username"
+                label="Usuario"
+                variant="outlined"
+                autocomplete="off"
+                :error="!!errors.username"
+                :error-messages="errors.username ? [errors.username] : []"
+              />
+            </v-col>
 
-                    <v-divider />
-                    <v-card-actions class="justify-end">
-                        <v-btn variant="text" @click="goBack">Cancelar</v-btn>
-                        <v-btn color="primary" :loading="saving" :disabled="saving" type="submit"
-                            prepend-icon="mdi-content-save-outline">Guardar cambios</v-btn>
-                    </v-card-actions>
-                </v-form>
-            </template>
-        </v-card>
+            <!-- email -->
+            <v-col cols="12" md="6">
+              <v-text-field
+                v-model="email"
+                label="Email"
+                variant="outlined"
+                autocomplete="off"
+                :error="!!errors.email"
+                :error-messages="errors.email ? [errors.email] : []"
+              />
+            </v-col>
 
-        <v-snackbar v-model="snackbar.success.open" color="success" :timeout="2500">
-            {{ snackbar.success.msg }}
-        </v-snackbar>
-        <v-snackbar v-model="snackbar.error.open" color="error" :timeout="3500">
-            {{ snackbar.error.msg }}
-        </v-snackbar>
-    </v-container>
+            <!-- phone -->
+            <v-col cols="12" md="6">
+              <v-text-field
+                v-model="phone"
+                label="Teléfono"
+                variant="outlined"
+                autocomplete="off"
+                :error="!!errors.phone"
+                :error-messages="errors.phone ? [errors.phone] : []"
+              />
+            </v-col>
+
+            <!-- password (opcional) -->
+            <v-col cols="12" md="6">
+              <v-text-field
+                v-model="password"
+                label="Contraseña (opcional)"
+                type="password"
+                variant="outlined"
+                autocomplete="new-password"
+                :error="!!errors.password"
+                :error-messages="errors.password ? [errors.password] : []"
+                hint="Déjala vacía si no quieres cambiarla"
+                persistent-hint
+              />
+            </v-col>
+          </v-row>
+        </v-card-text>
+
+        <v-divider />
+
+        <v-card-actions class="justify-end">
+          <v-btn variant="text" @click="goBack">Cancelar</v-btn>
+          <v-btn
+            color="primary"
+            :loading="saving"
+            :disabled="saving"
+            type="submit"
+            prepend-icon="mdi-content-save-outline"
+          >
+            Guardar
+          </v-btn>
+        </v-card-actions>
+      </Form>
+    </v-card>
+
+    <v-snackbar v-model="snackbar.success.open" color="success" :timeout="2500">
+      {{ snackbar.success.msg }}
+    </v-snackbar>
+    <v-snackbar v-model="snackbar.error.open" color="error" :timeout="3500">
+      {{ snackbar.error.msg }}
+    </v-snackbar>
+  </v-container>
 </template>
 
 <script setup lang="ts">
-import { onMounted, reactive, ref } from 'vue'
-import { useRoute, useRouter } from 'vue-router'
-import { PassengersService, type Passenger } from '@/services/passengers.service'
+import { reactive, ref, onMounted, computed, watch } from 'vue'
+import { useRouter, useRoute } from 'vue-router'
+import { useStore } from 'vuex'
+import { Form, useForm, useField } from 'vee-validate'
+import * as yup from 'yup'
 
+// Router / Store
 const route = useRoute()
 const router = useRouter()
+const store = useStore()
+const saving = ref(false)
+
+// Si este "add.vue" puede recibir un id para clonar/editar, lo leemos; si no, quedará NaN
 const id = ref<number>(Number(route.params.id))
 
-const loading = ref(true)
-const saving = ref(false)
-const error = ref<string | null>(null)
-const formRef = ref<any>(null)
-const createdAt = ref<string>('')
-
-const form = reactive<Omit<Passenger, 'id' | 'created_at'>>({
-    name: '', email: '', phone: '',
-    trips_count: 0, status: 'ACTIVE',
-    tax: { rfc: '', business_name: '', regime: 'RÉGIMEN GENERAL', zip: '' }
+// Yup (rol_id numérico; cambia a string() si tu id es string)
+const schema = yup.object({
+  rol_id: yup.number().typeError('Seleccione un rol').required('Requerido'),
+  first_name: yup.string().trim().min(2, 'Mínimo 2 caracteres').required('Requerido'),
+  last_name: yup.string().trim().min(2, 'Mínimo 2 caracteres').required('Requerido'),
+  username: yup.string().trim().min(2, 'Mínimo 2 caracteres').required('Requerido'),
+  email: yup.string().trim().email('Email inválido').required('Requerido'),
+  phone: yup
+    .string()
+    .trim()
+    .matches(/^[0-9+\-\s()]{7,20}$/, 'Teléfono inválido')
+    .required('Requerido'),
+  // ✅ Contraseña opcional: si está vacía no valida; si trae valor, exige mínimo 8
+  password: yup
+    .string()
+    .transform(v => (v === '' ? undefined : v))
+    .optional()
+    .min(8, 'Mínimo 8 caracteres'),
 })
 
-const statusItems = [
-    { title: 'ACTIVO', value: 'ACTIVE' },
-    { title: 'INACTIVO', value: 'INACTIVE' },
-]
-const regimeItems = ['RÉGIMEN GENERAL', 'RIF', 'ASALARIADOS']
+// useForm
+const { handleSubmit, errors, setValues } = useForm({
+  validationSchema: schema,
+  initialValues: {
+    rol_id: null as unknown as number | null,
+    first_name: '',
+    last_name: '',
+    username: '',
+    email: '',
+    phone: '',
+    password: '', // inicial vacía
+  },
+})
 
-const rules = {
-    required: (v: any) => (!!v || v === 0) || 'Requerido',
-    min: (n: number) => (v: string) => (!v || v.length >= n) || `Mínimo ${n} caracteres`,
-    minValue: (n: number) => (v: number) => (v === undefined || v === null || v >= n) || `Mínimo ${n}`,
-    email: (v: string) => (!!v && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v)) || 'Correo inválido',
-    phone: (v: string) => (!v || /^\+\d{6,15}$/.test(v)) || 'Teléfono E.164 inválido',
-    rfc: (v: string) => (!!v && /^[A-ZÑ&]{3,4}\d{6}[A-Z0-9]{2,3}$/.test(v)) || 'RFC inválido',
-    cp: (v: string) => (!!v && /^\d{5}$/.test(v)) || 'CP inválido',
+// Campos con useField → refs reactivas para v-model
+const { value: rol_id } = useField<number | null>('rol_id')
+const { value: first_name } = useField<string>('first_name')
+const { value: last_name } = useField<string>('last_name')
+const { value: username } = useField<string>('username')
+const { value: email } = useField<string>('email')
+const { value: phone } = useField<string>('phone')
+const { value: password } = useField<string | undefined>('password')
+
+// Items del select
+const roles = computed(() => {
+  const data = store.getters['roles/select']
+  return (data ?? []).map((item: any) => ({
+    label: item.name,
+    value: Number(item.id_role), // ⬅️ asegura tipo numérico
+  }))
+})
+
+// Getter con la vista del usuario
+const view = computed(() => store.getters['users/view'])
+
+// Carga de roles y (si hay id) del usuario
+const selectRoles = async () => {
+  await store.dispatch('roles/select')
 }
-
-function normalizePhone(v?: string) {
-    if (!v) return ''
-    let s = String(v).replace(/[\s()-]/g, '')
-    if (s && s[0] !== '+') s = '+' + s
-    return s.slice(0, 16)
-}
-function toRFC(v?: string) { return (v ?? '').trim().toUpperCase() }
-
-onMounted(load)
 
 async function load() {
-    try {
-        loading.value = true
-        error.value = null
-        const data = await PassengersService.getById(id.value)
-        if (!data) { error.value = 'No encontrado.'; return }
-        // set form
-        form.name = data.name
-        form.email = data.email
-        form.phone = data.phone
-        form.trips_count = data.trips_count
-        form.status = data.status
-        form.tax = { ...data.tax }
-        createdAt.value = data.created_at
-    } catch (e: any) {
-        error.value = e?.message ?? 'Error al cargar.'
-    } finally {
-        loading.value = false
-    }
+  if (!Number.isNaN(id.value)) {
+    await store.dispatch('users/view', id.value)
+  }
 }
 
-async function onSubmit() {
-    const { valid } = await formRef.value?.validate()
-    if (!valid) return
+// 🔁 Cuando cambie `view`, poblar el formulario (no seteamos password desde backend)
+watch(
+  view,
+  (val: any) => {
+    if (!val) return
+    setValues({
+      rol_id:
+        val.rol_id != null
+          ? Number(val.rol_id)
+          : val.role_id != null
+          ? Number(val.role_id)
+          : val.role?.id_role != null
+          ? Number(val.role.id_role)
+          : null,
+      first_name: (val.first_name ?? val.name ?? '').toString(),
+      last_name: (val.last_name ?? val.surname ?? '').toString(),
+      username: (val.username ?? val.user ?? '').toString(),
+      email: (val.email ?? '').toString(),
+      phone: (val.phone ?? val.telefono ?? '').toString(),
+      password: '', // mantenerla vacía; es opcional
+    })
+  },
+  { immediate: true }
+)
+
+// Submit
+const onSubmit = handleSubmit(
+  async (values) => {
     try {
-        saving.value = true
-        form.phone = normalizePhone(form.phone)
-        form.tax.rfc = toRFC(form.tax.rfc)
-        await PassengersService.update(id.value, { ...form })
-        snackbar.success = { open: true, msg: 'Cambios guardados.' }
-        router.push({ name: 'passengers-view', params: { id: id.value } })
+      saving.value = true
+      const result = await store.dispatch('users/edit', { id: id.value, body: values })
+      if (!result) {
+        snackbar.error.msg = 'No se pudo crear.'
+        snackbar.error.open = true
+        return
+      }
+      router.push({ name: 'users-view', params: { id: result.id } })
     } catch (e: any) {
-        snackbar.error = { open: true, msg: e?.message ?? 'No se pudo guardar.' }
+      snackbar.error.msg = e?.message ?? 'No se pudo crear.'
+      snackbar.error.open = true
     } finally {
-        saving.value = false
+      saving.value = false
     }
-}
-function formatDate(iso?: string) {
-    if (!iso) return ''
-    const d = new Date(iso)
-    return new Intl.DateTimeFormat('es-MX', {
-        year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit'
-    }).format(d)
-}
+  },
+  () => {}
+)
+
+// Snackbars
+const snackbar = reactive({
+  success: { open: false, msg: '' },
+  error: { open: false, msg: '' },
+})
+
+watch(
+  () => route.params.id,
+  () => {
+    id.value = Number(route.params.id)
+    load()
+  }
+)
+
 function goBack() {
-    if (history.length > 1) router.back()
-    else router.push({ name: 'passengers-list' })
+  if (history.length > 1) router.back()
+  else router.push({ name: 'users-list' })
 }
 
-const snackbar = reactive({ success: { open: false, msg: '' }, error: { open: false, msg: '' } })
+onMounted(() => {
+  id.value = Number(route.params.id)
+  selectRoles()
+  load()
+})
 </script>

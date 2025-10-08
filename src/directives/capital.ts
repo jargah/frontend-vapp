@@ -13,7 +13,6 @@ function detectMode(binding: DirectiveBinding<CapitalMode | undefined>): Capital
     return 'upper' // default
 }
 
-const rxLetter = /\p{L}/u
 
 function transformValue(value: string, mode: CapitalMode): string {
     switch (mode) {

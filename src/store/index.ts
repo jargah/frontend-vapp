@@ -2,6 +2,15 @@ import { createStore } from 'vuex'
 import { ui } from './modules/ui'
 import { auth } from './modules/auth'
 import { prospects } from './modules/prospects'
+import { users } from './modules/users'
+import { roles } from './modules/roles'
+import { passengers } from './modules/passengers'
+import { operators } from './modules/operators'
+import { vehicles } from './modules/vehicles'
+import { typeMotor } from './modules/type_motor'
+import { typePayment } from './modules/type_payment'
+import { typeTaxi } from './modules/type_taxi'
+import { serviceTravel } from './modules/serviceTravel'
 
 type DialogState = {
     type: string
@@ -70,7 +79,16 @@ export const store = createStore<GlobalState>({
     modules: { 
         ui, 
         auth,
-        prospects
+        prospects,
+        users,
+        roles,
+        passengers,
+        operators,
+        vehicles,
+        typeMotor,
+        typePayment,
+        typeTaxi,
+        serviceTravel
     },
 })
 

@@ -3,27 +3,37 @@ const prospects = [
     {
         path: '/prospects',
         component: () => import('@/views/page.vue'),
-        meta: { public: false, layout: 'default-layout' },
+        meta: { 
+            public: false, 
+            layout: 'default-layout',
+            access: [1,2,3]
+        },
         children: [
             { 
                 path: '', 
                 name: 'prospects-list', 
-                component: () => import('@/views/prospects/index.vue') 
+                component: () => import(/* webpackChunkName: "prospect-list" */ '@/views/prospects/index.vue'),
+                meta: {
+                    
+                }
             },
             { 
                 path: 'add', 
                 name: 'prospects-add', 
-                component: () => import('@/views/prospects/add.vue') 
+                component: () => import(/* webpackChunkName: "prospect-add" */'@/views/prospects/add.vue') 
             },
             { 
                 path: ':id/view', 
                 name: 'prospects-view', 
-                component: () => import('@/views/prospects/view.vue') 
+                component: () => import(/* webpackChunkName: "prospect-view" */'@/views/prospects/view.vue'),
+                meta: {
+                    
+                } 
             },
             { 
                 path: ':id/edit', 
                 name: 'prospects-edit', 
-                component: () => import('@/views/prospects/edit.vue') 
+                component: () => import(/* webpackChunkName: "prospect-edit" */'@/views/prospects/edit.vue') 
             },
         ],
     }

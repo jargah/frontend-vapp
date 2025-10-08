@@ -1,6 +1,5 @@
 import axios from 'axios';
 import type { AxiosInstance, AxiosRequestConfig, AxiosError } from 'axios';
-import { router } from '@/router/index'
 
 export type HttpMethod = 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE' | 'HEAD' | 'OPTIONS';
 export type HeadersMap = Record<string, string>;
@@ -16,8 +15,8 @@ export interface ServerEnvelope<T = unknown> {
 }
 
 export type ClientResponse<T = unknown> =
-    | { success: true; data: T }
-    | { success: false; data?: null; errors?: unknown; error?: Array<{ code: number; message: string }> };
+    | { status: number, success: true; data: T }
+    | { status: number, success: false; data?: null; errors?: unknown; error?: Array<{ code: number; message: string }> };
 
 const BASE_URL = import.meta.env.VITE_API_URL as string | undefined;
 const ENV_BEARER = import.meta.env.VITE_BEARER as string | undefined;
@@ -125,19 +124,15 @@ function mapEnvelope<T>(env: ServerEnvelope<T> | null): ClientResponse<T> | null
     const r = env;
 
     if (r && r.status === 200 && r.data != null) {
-        return { success: true, data: r.data as T };
+        return { status: r.status, success: true, data: r.data as T };
     } else if (r && (r.status === 400 || r.status === 202)) {
-        return { success: false, errors: r.errors };
+        return { status: r.status, success: false, errors: r.errors };
     } else if (r && r.status === 404) {
-        return { success: false, error: [{ code: 404, message: 'Url not found' }] };
+        return { status: r.status, success: false, error: [{ code: 404, message: 'Url not found' }] };
     } else if (r && r.status === 401 && r.errors != null) {
-        localStorage.removeItem('appid')
-        /* router.push({
-            name: 'login'
-        }) */
-        return null
+        return { status: r.status, success: false, errors: r.errors, };
     } else {
-        return { success: false, data: null };
+        return { status: 500, success: false, data: null };
     }
 }
 
@@ -172,7 +167,7 @@ export async function apiRequest<T = unknown>(
         const env = ax.response?.data ?? null;
         const errors = ax.response?.data?.errors;
         if (env) return mapEnvelope<T>(env)!;
-        return { success: false, data: null, errors };
+        return { status: 500, success: false, data: null, errors };
     }
 }
 

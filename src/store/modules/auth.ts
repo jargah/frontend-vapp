@@ -38,6 +38,9 @@ export const auth: Module<AuthState, any> = {
             state.user = payload
         },
         SET_SESSION(state, payload) {
+
+            console.log(payload)
+
             state.appid = payload
             localStorage.setItem('appid', payload.appid)
             localStorage.setItem('session', payload.token)
@@ -78,7 +81,7 @@ export const auth: Module<AuthState, any> = {
 
         },
 
-        async me({ commit, rootGetters }, payload) {
+        async me({ commit, rootGetters }) {
 
             setDefaultHeaders({
                 'session': rootGetters['auth/token']
@@ -86,11 +89,11 @@ export const auth: Module<AuthState, any> = {
 
             const result = await getJson<{me: Profile }>('administrator/profile/me');
 
-            if(!result) {
+            if(result.status === 401) {
                 localStorage.removeItem('appid')
-                /* router.push({
+                router.push({
                     name: 'login'
-                }) */
+                })
                 return
             }
 

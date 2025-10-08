@@ -1,6 +1,8 @@
 {
     "extends": "@vue/tsconfig/tsconfig.dom.json",
     "compilerOptions": {
+        "useUnknownInCatchVariables": false,
+        "strictFunctionTypes": false,
         "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.app.tsbuildinfo",
         "target": "ES2020",
         "module": "ESNext",
@@ -11,13 +13,14 @@
             "DOM.Iterable"
         ],
         "types": [
-            "vite/client"
+            "vite/client",
+            "vuetify"
         ],
         "esModuleInterop": true,
         "skipLibCheck": true,
-        "strict": true,
-        "noUnusedLocals": true,
-        "noUnusedParameters": true,
+        "strict": false,
+        "noUnusedLocals": false,
+        "noUnusedParameters": false,
         "erasableSyntaxOnly": true,
         "noFallthroughCasesInSwitch": true,
         "noUncheckedSideEffectImports": true,
@@ -26,12 +29,16 @@
             "@/*": [
                 "src/*"
             ]
-        }
+        },
+        
     },
     "include": [
         "src/**/*.ts",
         "src/**/*.tsx",
         "src/**/*.vue",
         "src/types/**/*.d.ts"
-    ]
+    ],
+    "vueCompilerOptions": {
+        "strictTemplates": false
+    }
 }

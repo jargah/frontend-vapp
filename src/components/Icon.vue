@@ -6,7 +6,7 @@
 
 import { Icon } from "@iconify/vue"
 
-const props = defineProps({
+defineProps({
     icon: { type: String, required: true },
     width: { type: Number, default: 30 },
 })

@@ -1,192 +1,283 @@
 <template>
-    <v-card>
-        <!-- Toolbar con título, buscador y botón Agregar -->
-        <v-toolbar flat>
-            <v-toolbar-title>{{ title }}</v-toolbar-title>
-            <v-spacer />
-            <v-text-field v-model="q" :placeholder="searchPlaceholder" clearable density="comfortable" hide-details
-                prepend-inner-icon="mdi-magnify" style="max-width: 280px" />
-            <v-btn color="primary" class="ms-3" prepend-icon="mdi-plus" @click="$emit('add')">
+    <div>
+        <div class="d-flex justify-content-end gap-3 m-3">
+            <v-btn 
+                color="primary" 
+                prepend-icon="mdi-plus" 
+                :to="{ name: toAdd }" 
+                v-if="toAdd !== ''">
                 Agregar
             </v-btn>
-        </v-toolbar>
+        </div>
 
-        <v-divider />
+        <v-card rounded="md" elevation="1">
 
-        <!-- DataTable -->
-        <v-data-table 
-            :loading="loading" 
-            :headers="computedHeaders" 
-            :items="filteredItems"
-            :items-per-page="itemsPerPageLocal" 
-            v-model:page="page" 
-            v-model:expanded="expandedLocal"
-            :item-key="itemKey"
-            class="elevation-1">
-            <!-- Estado como chip -->
-            <template #item.status="{ value }">
-                <v-chip :color="value ? 'success' : 'warning'" size="small" variant="tonal">
-                    {{ value ? 'Activo' : 'Inactivo' }}
-                </v-chip>
+
+            <template v-slot:title>
+                <v-row class="d-flex justify-content-between">
+                    <v-col cols="6" class="m-3">
+                        <span class="font-weight-black">
+                            {{ title }}
+                        </span>
+                    </v-col>
+                    <v-col cols="4" class="d-flex align-items-center">
+                        <v-text-field  
+                            placeholder="Buscador" 
+                            variant="outlined"
+                            autocomplete="off"
+                            @update:model-value="setSearch" 
+                        />
+                    </v-col>
+                </v-row>
+                <v-divider></v-divider>
             </template>
 
-            <!-- Acciones -->
-            <template #item.actions="{ item }">
-                <v-btn icon variant="text" @click="onView(item)">
-                    <v-icon>mdi-eye</v-icon>
-                </v-btn>
-                <v-btn icon variant="text" @click="onEdit(item)">
-                    <v-icon>mdi-pencil</v-icon>
-                </v-btn>
-                <v-btn icon variant="text" color="error" @click="onDelete(item)">
-                    <v-icon>mdi-delete</v-icon>
-                </v-btn>
-            </template>
+            <v-data-table-server 
+                :height="620"
+                fixed-header
+                :headers="headers" 
+                :items="datatable.list ?? []" 
+                :items-length="total"
+                :page="page"
+                v-model:items-per-page="rows" 
+                item-value="id"
+                @update:options="loadData"
+                @update:items-per-page="setRows"
+                :loading="loading"
+            >
 
-            <!-- Fila expandida (detalle) -->
-            <!-- <template #expanded-row="{ columns, item }">
-                <tr>
-                    <td :colspan="columns.length">
-                        <slot name="expanded" :item="item">
-                            <v-card variant="tonal" class="ma-2">
-                                <v-card-text class="text-body-2">
-                                    <div class="d-flex flex-wrap ga-6">
-                                        <div><strong>ID:</strong> {{ item.id }}</div>
-                                        <div><strong>Email:</strong> {{ item.email }}</div>
-                                        <div><strong>Rol:</strong> {{ item.role }}</div>
-                                        <div><strong>Creado:</strong> {{ item.createdAt }}</div>
-                                        <div class="w-100 mt-2">
-                                            <strong>Notas:</strong>
-                                            <div>{{ item.notes || '—' }}</div>
-                                        </div>
-                                    </div>
-                                </v-card-text>
-                            </v-card>
-                        </slot>
-                    </td>
-                </tr>
-            </template> -->
-        </v-data-table>
-    </v-card>
+                <template v-slot:loading>
+                    <v-skeleton-loader type="table-row@10" />
+                </template>
 
-    <!-- Diálogo Ver -->
-    <v-dialog v-model="viewDialog" max-width="520">
-        <v-card>
-            <v-card-title class="text-h6">Detalle</v-card-title>
-            <v-card-text>
-                <slot name="view" :item="selectedItem">
-                    <div class="mb-2"><strong>Nombre:</strong> {{ selectedItem?.name }}</div>
-                    <div class="mb-2"><strong>Email:</strong> {{ selectedItem?.email }}</div>
-                    <div class="mb-2"><strong>Rol:</strong> {{ selectedItem?.role }}</div>
-                    <div class="mb-2"><strong>Estado:</strong> {{ selectedItem?.status ? 'Activo' : 'Inactivo' }}</div>
-                    <div class="mb-2"><strong>Creado:</strong> {{ selectedItem?.createdAt }}</div>
-                    <div class="mb-2"><strong>Notas:</strong> {{ selectedItem?.notes || '—' }}</div>
-                </slot>
-            </v-card-text>
-            <v-card-actions>
-                <v-spacer />
-                <v-btn variant="text" @click="viewDialog = false">Cerrar</v-btn>
-            </v-card-actions>
+                <template v-slot:no-data>
+                    <div class="pa-8 text-center">
+                        <v-icon size="48" class="mb-3">mdi-database-off</v-icon>
+                        <div class="text-h6 mb-1">
+                            Sin registros
+                        </div>
+                        <div class="text-medium-emphasis mb-4">
+                            No hay datos para mostrar.
+                        </div>
+                        <div class="d-flex justify-center ga-3">
+                            <v-btn color="primary" @click="reload">
+                                Recargar
+                            </v-btn>
+                            
+                        </div>
+                    </div>
+                </template>
+
+                <template #item.status="{ item }">
+                    <v-chip 
+                        size="small" 
+                        :color="'info'">
+                        <b>
+                            {{ (item as any).status }}
+                        </b>
+                    </v-chip>
+                </template>
+
+                <template #item.actions="{ item }">
+                        <div class="text-center">
+                            <v-btn 
+                                v-if="toView !== ''"
+                                :to="{ 
+                                    name: toView, 
+                                    params: { 
+                                        id: (item as any).id 
+                                    } 
+                                }" 
+                                icon="mdi-eye-outline"
+                                variant="text" 
+                            />
+                            <v-btn 
+                                v-if="toEdit !== ''"
+                                :to="{ 
+                                    name: toEdit, 
+                                    params: { 
+                                        id: (item as any).id 
+                                    } 
+                                }" 
+                                icon="mdi-pencil-outline" 
+                                variant="text" 
+                            />
+                            <v-btn 
+                                v-if="urlDelete !== ''"
+                                icon="mdi-trash-can-outline" 
+                                variant="text" 
+                                color="error" 
+                                @click="openDeleted(item)" 
+                            />
+                        </div>
+                    </template>
+
+                <template #item.creation="{ item }">
+                    {{ formatDate((item as any).creation) }}
+                </template>
+        
+            </v-data-table-server>
         </v-card>
-    </v-dialog>
 
-    <!-- Confirmación Eliminar -->
-    <v-dialog v-model="confirmDelete" persistent max-width="420">
-        <v-card>
-            <v-card-title class="text-h6">Eliminar registro</v-card-title>
-            <v-card-text>
-                ¿Seguro que deseas eliminar <strong>{{ selectedItem?.name }}</strong>?
-            </v-card-text>
-            <v-card-actions>
-                <v-spacer />
-                <v-btn variant="text" @click="confirmDelete = false">Cancelar</v-btn>
-                <v-btn color="error" @click="doDelete">Eliminar</v-btn>
-            </v-card-actions>
-        </v-card>
-    </v-dialog>
+        <v-dialog v-model="dialog.open" max-width="520">
+            <v-card rounded="lg" elevation="8">
+                <v-card-title class="d-flex align-center ga-3 py-2">
+                    <v-icon color="red" size="34">mdi-alert-circle</v-icon>
+                    <div class="text-h6 font-weight-bold">
+                        Eliminar registro
+                    </div>
+                </v-card-title>
+
+                <v-divider />
+
+                <v-card-text class="py-5">
+                    <div class="text-body-1">
+                        ¿Confirmas en eliminar el registro seleccionado?
+                    </div>
+                </v-card-text>
+
+                <v-divider />
+
+                <v-card-actions class="justify-end ga-2 py-1">
+                    <v-btn variant="text" @click="dialog.open = false" prepend-icon="mdi-close-circle-outline">
+                        Cancelar
+                    </v-btn>
+                    <v-btn 
+                        color="error" 
+                        variant="flat" 
+                        @click="deleted" 
+                        prepend-icon="mdi-trash-can-outline"
+                    >
+                            Continuar
+                    </v-btn>
+                </v-card-actions>
+            </v-card>
+        </v-dialog>
+    </div>
 </template>
 
 <script setup lang="ts">
-import type { Row } from '@/types/datatable'
-import { computed, ref } from 'vue'
+import { computed, ref, watch, onBeforeMount } from 'vue'
+import { useStore } from 'vuex'
+import { debounce } from 'lodash-es'
 
-type Header = { title: string; key: keyof Row | 'actions'; width?: number; sortable?: boolean }
-
-/** Props */
-const props = withDefaults(defineProps<{
-    title?: string
-    items: Row[]
-    loading?: boolean
-    headers?: Header[]
-    itemKey?: keyof Row | string
-    searchPlaceholder?: string
-    itemsPerPage?: number
-}>(), {
-    title: 'Usuarios',
-    loading: false,
-    itemKey: 'id',
-    searchPlaceholder: 'Buscar…',
-    itemsPerPage: 5,
+const props = defineProps({
+    url: String,
+    urlDelete: { type: String, default: '' },
+    title: String,
+    headers: { type: Array, default: () => [] },
+    toAdd: { type: String, default: '' },
+    toView: { type: String, default: '' },
+    toEdit: { type: String, default: '' }
 })
 
-/** Emits */
-const emit = defineEmits<{
-    (e: 'add'): void
-    (e: 'view', item: Row): void
-    (e: 'edit', item: Row): void
-    (e: 'delete', item: Row): void
-    (e: 'deleted', id: number): void
-}>()
+const store = useStore()
 
-/** Encabezados por defecto (si no pasan headers) */
-const defaultHeaders: Header[] = [
-    { title: 'ID', key: 'id', width: 10 },
-    { title: 'Nombre', key: 'name', width: 150 },
-    { title: 'Email', key: 'email', width: 150 },
-    { title: 'Rol', key: 'role', width: 120 },
-    { title: 'Estado', key: 'status', width: 120 },
-    { title: 'Acciones', key: 'actions', sortable: false, width: 140 },
-]
-const computedHeaders = computed(() => props.headers?.length ? props.headers : defaultHeaders)
-
-/** Estado local */
-const q = ref('')
-const page = ref(1)
-const itemsPerPageLocal = ref(props.itemsPerPage)
-const expandedLocal = ref<(string | number)[]>([])
-const viewDialog = ref(false)
-const confirmDelete = ref(false)
-const selectedItem = ref<Row | null>(null)
-
-/** Filtro global */
-const filteredItems = computed(() => {
-    const term = q.value.trim().toLowerCase()
-    if (!term) return props.items
-    return props.items.filter(r => {
-        const haystack = `${r.id} ${r.name} ${r.email} ${r.role} ${r.notes ?? ''} ${r.createdAt}`.toLowerCase()
-        return haystack.includes(term)
-    })
+const loading = ref(true)
+const dialog = ref({
+    open: false,
+    message: '',
+    item: null
 })
 
-/** Acciones */
-function onView(item: Row) {
-    selectedItem.value = item
-    viewDialog.value = true
-    emit('view', item)
+const datatable = computed(() =>
+    store.getters['ui/datatable'] ?? { list: [], meta: { total_items: 0, page: 1, rows: 10 } }
+)
+
+watch(() => datatable.value.list, (_, __) => {
+        setTimeout(() => {
+            loading.value = false
+        }, 1000);
+    },
+    { immediate: true } 
+)
+
+
+const total = computed(() => Number(datatable.value?.meta?.total_items ?? 0))
+
+const page = computed({
+    get: () => Number(datatable.value?.meta?.page ?? 1),
+    set: (val: number) => store.commit('ui/SET_DATATABLE_PAGE', Number(val)),
+})
+
+const rows = computed({
+    get: () => Number(datatable.value?.meta?.rows ?? 10),
+    set: (val: number) => store.commit('ui/SET_DATATABLE_ROWS', Number(val)),
+})
+
+async function loadData(opts?: { page?: number; itemsPerPage?: number }) {
+    if (opts?.page != null) page.value = opts.page
+
+    if (opts?.itemsPerPage != null) {
+        rows.value = opts.itemsPerPage
+        if (opts.page == null) page.value = 1 // típico reset
+    }
+
+    const params = store.getters['ui/datatableParams']
+    await store.dispatch('ui/datatable', { url: props.url, params })
 }
-function onEdit(item: Row) {
-    emit('edit', item)
+
+
+const setRows = async (value: number) => {
+    store.commit('ui/SET_DATATABLE_ROWS', value)
+
+    const params = store.getters['ui/datatableParams']
+    await store.dispatch('ui/datatable', { url: props.url, params })
 }
-function onDelete(item: Row) {
-    selectedItem.value = item
-    confirmDelete.value = true
-    emit('delete', item)
+
+const setSearch = debounce(async (value: any) => {
+    store.commit('ui/SET_DATATABLE_SEARCH', value)
+
+    const params = store.getters['ui/datatableParams']
+    await store.dispatch('ui/datatable', { url: props.url, params })
+}, 500)
+
+const reload = async () => {
+    const params = store.getters['ui/datatableParams']
+    
+    loading.value = true
+    await store.dispatch('ui/datatable', { url: props.url, params })
+
+    loading.value = false
 }
-function doDelete() {
-    if (!selectedItem.value) return
-    const id = selectedItem.value.id
-    confirmDelete.value = false
-    emit('deleted', id)
-    selectedItem.value = null
+
+const openDeleted = (value) => {
+    dialog.value.open = true
+    dialog.value.item = value
 }
+
+const deleted = async () => {
+
+    const url = props.urlDelete.replace('{id}', dialog.value.item.id)
+    await store.dispatch('ui/datatableDelete', { url: url })
+
+    dialog.value.open = false
+    dialog.value.item = null
+
+    const params = store.getters['ui/datatableParams']
+    await store.dispatch('ui/datatable', { url: props.url, params })
+}
+
+const formatDate = (iso: string) => {
+    const d = new Date(iso)
+    return new Intl.DateTimeFormat('es-MX', {
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit',
+    }).format(d)
+}
+
+onBeforeMount(() => {
+    store.commit('ui/SET_DATATABLE_PARAMS_RESET')
+})
+
 </script>
+
+
+<style>
+.v-card {
+    height: calc(100% - 64px);
+}
+</style>

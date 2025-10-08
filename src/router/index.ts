@@ -1,42 +1,69 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import { store } from '@/store'
 
-/* import settings from './modules/settings'
-import fleets from './modules/fleets'
+
+import users from './modules/users'
+import prospects from './modules/prospects'
 import operators from './modules/operators'
 import passengers from './modules/passengers'
-import invoice from './modules/invoice'
-import referral from './modules/referral' */
-
-import prospects from './modules/prospects'
+import vehicles from './modules/vehicles'
+import typeMotor from './modules/type_motor'
+import typePayment from './modules/type_payment'
+import typeTaxi from './modules/type_taxi'
+import travels from './modules/travels'
 
 
 const Home = () => import('@/views/HomeView.vue')
-const Profile = () => import('@/views/ProfileView.vue')
-const Settings = () => import('@/views/settings/index.vue')
 const Login = () => import('@/views/LoginView.vue')
 
 
 const routes = [
-    { 
-        path: '/', 
-        name: 'login', 
-        component: Login, 
-        meta: { 
+    {
+        path: '/',
+        name: 'login',
+        component: Login,
+        meta: {
             public: true,
-            layout: 'auth-layout' 
-        } 
-    },
-    { 
-        path: '/dashboard', 
-        name: 'home', 
-        component: Home,
-        meta: { 
-            public: false,
-            layout: 'default-layout' 
+            layout: 'auth-layout',
         }
     },
+    {
+        path: '/dashboard',
+        name: 'home',
+        component: Home,
+        meta: {
+            public: false,
+            layout: 'default-layout',
+            access: [1,2,3,4]
+        }
+    },
+    {
+        path: '/no-access',
+        name: 'no-access',
+        component: () => import('@/views/NoAccessView.vue'),
+        meta: {
+            public: false,
+            layout: 'default-layout',
+            access: [1,2,3,4]
+        }
+    },
+    ...users,
     ...prospects,
+    ...operators,
+    ...passengers,
+    ...vehicles,
+    ...typeMotor,
+    ...typePayment,
+    ...typeTaxi,
+    ...travels,
+    {
+        path: '/:pathMatch(.*)*',
+        name: 'not-found',
+        component: () => import('@/views/NotFound.vue'),
+        meta: { 
+            public: true 
+        },
+    },
     /* ...fleets,
     ...operators,
     ...passengers,
@@ -45,44 +72,38 @@ const routes = [
     ...settings */
 ]
 
-export const router = createRouter({ 
-    history: createWebHistory(), 
-    routes 
+export const router = createRouter({
+    history: createWebHistory(),
+    routes
 })
 
-router.beforeEach(async(from, to, next) => {
+router.beforeEach(async (to) => {
 
+    console.log(to)
 
+    // Recupera la sesión solo una vez al entrar
     store.commit('auth/GET_SESSION')
     const appid = store.getters['auth/appid']
-    await store.dispatch('auth/me')
 
-    console.log(appid, 'appid')
-    console.log(from.meta, 'from')
-    console.log(to.meta, 'to')
-
-    console.log(appid, from.meta.public)
-
-
-    if(appid == null && !from.meta.public) {
-        console.log(1231)
-        next({
-            name: 'login'
-        })
-        return
+    // Si ya tienes appid y quieres refrescar perfil, hazlo aquí (opcional)
+    if (appid) {
+        try { await store.dispatch('auth/me') } catch (_) { }
     }
-    else if(appid != null && from.meta.public) {
 
-        next({
-            name: 'home'
-        })
-        return
+
+    const isPublic = to.matched.some(r => r.meta?.public === true)
+
+    // No autenticado intentando ir a ruta privada → login
+    if (!appid && !isPublic && to.name !== 'login') {
+        return { name: 'login', replace: true }
     }
-    
-    console.log(333)
-    next()
 
-    /* const isAuth = store.getters['auth/isAuthenticated']
-    if (!to.meta.public && !isAuth) return { name: 'login' }
-    if (to.name === 'login' && isAuth) return { name: 'home' } */
+    // Autenticado intentando ir a login/guest → home
+    if (appid && (to.name === 'login' || to.meta?.guest === true)) {
+        return { name: 'home', replace: true }
+    }
+
+    console.log('here', isPublic, to.name, to.meta)
+
+    return true
 })

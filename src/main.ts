@@ -8,7 +8,10 @@ import '@/assets/styles/style.scss'
 import AuthLayout from '@/layouts/auth.vue'
 import DefaultLayout from '@/layouts/default.vue'
 
-import { vCapital } from './directives/capital'
+import { vCapital } from '@/directives/capital'
+import { vOnlyDigits } from '@/directives/onlyDigits'
+import vAlphanumSpaces from '@/directives/alphanum-spaces'
+import vAlphanumSpacesAt from '@/directives/alphanum-spaces-at';
 
 const app = createApp(App)
 
@@ -17,6 +20,9 @@ app.use(router)
 app.use(vuetify)
 
 app.directive('capital', vCapital)
+app.directive('only-digits', vOnlyDigits)
+app.directive('alphanum-spaces', vAlphanumSpaces)
+app.directive('alphanum-spaces-at', vAlphanumSpacesAt);
 
 app.component('auth-layout', AuthLayout)
 app.component('default-layout', DefaultLayout)

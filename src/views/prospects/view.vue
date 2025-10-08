@@ -207,9 +207,7 @@
 import { ref, onMounted, watch, computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import Icon from '@/components/Icon.vue'
-import S3Viewer from '@/components/S3Viewer.vue'
 
-import { OperatorsService, type Operator } from '@/services/operators.service'
 import { store } from '@/store'
 
 const route = useRoute()
@@ -218,26 +216,36 @@ const id = ref<number>(Number(route.params.id))
 
 const loading = ref(true)
 const error = ref<string | null>(null)
-const item = ref<Operator | null>(null)
 
-onMounted(load)
+onMounted(() => {
+    id.value = Number(route.params.id)
+    load()
+})
+
 watch(() => route.params.id, () => { 
-    id.value = Number(route.params.id); load() 
+    id.value = Number(route.params.id);
 })
 
 const view = computed(() => store.getters['prospects/prospect'])
 
 async function load() {
+
     await store.dispatch('prospects/view', id.value)
     loading.value = false
 }
 function formatDate(iso: string) {
     const d = new Date(iso)
-    return new Intl.DateTimeFormat('es-MX', { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' }).format(d)
+    return new Intl.DateTimeFormat('es-MX', { 
+        year: 'numeric',
+        month: '2-digit', 
+        day: '2-digit', 
+        hour: '2-digit', 
+        minute: '2-digit' 
+    }).format(d)
 }
 function goBack() {
     if (history.length > 1) router.back()
-    else router.push({ name: 'operators-list' })
+    else router.push({ name: 'prospects-list' })
 }
 </script>
 

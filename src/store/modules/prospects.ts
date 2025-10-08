@@ -80,8 +80,6 @@ export const prospects: Module<ProspectState, any> = {
             
             commit('SET_PROSPECT', result.data)
 
-            /* await new Promise((r) => setTimeout(r, 400))
-            commit('SET_SESSION', { token: 'demo-token', user: { email } }) */
         },
         logout({ commit }) {
             commit('CLEAR_SESSION')
