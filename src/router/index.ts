@@ -12,6 +12,7 @@ import typePayment from './modules/type_payment'
 import typeTaxi from './modules/type_taxi'
 import travels from './modules/travels'
 import fleets from './modules/fleets'
+import configurations from './modules/configurations'
 
 
 const Home = () => import('@/views/HomeView.vue')
@@ -58,6 +59,7 @@ const routes = [
     ...typeTaxi,
     ...travels,
     ...fleets,
+    ...configurations,
     {
         path: '/:pathMatch(.*)*',
         name: 'not-found',

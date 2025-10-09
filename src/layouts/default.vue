@@ -151,7 +151,10 @@ const baseItems: Item[] = [
     {
         title: 'Configuraciones',
         icon: 'mdi-cog-outline',
-        children: [{ title: 'Usuarios', to: { name: 'users-list' }, access: [1, 2, 4] }],
+        children: [
+            { title: 'Usuarios', to: { name: 'users-list' }, access: [1, 2, 4] },
+            { title: 'Comisiones', to: { name: 'config-commissions' }, access: [1, 2] }
+        ],
     } as GroupItem,
 ]
 
