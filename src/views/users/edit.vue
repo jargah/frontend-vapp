@@ -1,4 +1,3 @@
-<!-- src/views/configs/add.vue -->
 <template>
   <v-container fluid class="py-6">
     <div class="d-flex align-center justify-space-between mb-4 ga-3">
@@ -12,7 +11,6 @@
       <Form @submit="onSubmit">
         <v-card-text>
           <v-row dense>
-            <!-- rol_id -->
             <v-col cols="12" md="6">
               <v-select
                 v-model="rol_id"
@@ -26,7 +24,6 @@
               />
             </v-col>
 
-            <!-- first_name -->
             <v-col cols="12" md="6">
               <v-text-field
                 v-model="first_name"
@@ -38,7 +35,6 @@
               />
             </v-col>
 
-            <!-- last_name -->
             <v-col cols="12" md="6">
               <v-text-field
                 v-model="last_name"
@@ -50,7 +46,6 @@
               />
             </v-col>
 
-            <!-- username -->
             <v-col cols="12" md="6">
               <v-text-field
                 v-model="username"
@@ -62,7 +57,6 @@
               />
             </v-col>
 
-            <!-- email -->
             <v-col cols="12" md="6">
               <v-text-field
                 v-model="email"
@@ -74,7 +68,6 @@
               />
             </v-col>
 
-            <!-- phone -->
             <v-col cols="12" md="6">
               <v-text-field
                 v-model="phone"
@@ -86,7 +79,6 @@
               />
             </v-col>
 
-            <!-- password (opcional) -->
             <v-col cols="12" md="6">
               <v-text-field
                 v-model="password"
@@ -136,16 +128,13 @@ import { useStore } from 'vuex'
 import { Form, useForm, useField } from 'vee-validate'
 import * as yup from 'yup'
 
-// Router / Store
 const route = useRoute()
 const router = useRouter()
 const store = useStore()
 const saving = ref(false)
 
-// Si este "add.vue" puede recibir un id para clonar/editar, lo leemos; si no, quedará NaN
 const id = ref<number>(Number(route.params.id))
 
-// Yup (rol_id numérico; cambia a string() si tu id es string)
 const schema = yup.object({
   rol_id: yup.number().typeError('Seleccione un rol').required('Requerido'),
   first_name: yup.string().trim().min(2, 'Mínimo 2 caracteres').required('Requerido'),
@@ -157,7 +146,6 @@ const schema = yup.object({
     .trim()
     .matches(/^[0-9+\-\s()]{7,20}$/, 'Teléfono inválido')
     .required('Requerido'),
-  // ✅ Contraseña opcional: si está vacía no valida; si trae valor, exige mínimo 8
   password: yup
     .string()
     .transform(v => (v === '' ? undefined : v))
@@ -165,7 +153,6 @@ const schema = yup.object({
     .min(8, 'Mínimo 8 caracteres'),
 })
 
-// useForm
 const { handleSubmit, errors, setValues } = useForm({
   validationSchema: schema,
   initialValues: {
@@ -175,11 +162,10 @@ const { handleSubmit, errors, setValues } = useForm({
     username: '',
     email: '',
     phone: '',
-    password: '', // inicial vacía
+    password: '',
   },
 })
 
-// Campos con useField → refs reactivas para v-model
 const { value: rol_id } = useField<number | null>('rol_id')
 const { value: first_name } = useField<string>('first_name')
 const { value: last_name } = useField<string>('last_name')
@@ -188,19 +174,16 @@ const { value: email } = useField<string>('email')
 const { value: phone } = useField<string>('phone')
 const { value: password } = useField<string | undefined>('password')
 
-// Items del select
 const roles = computed(() => {
   const data = store.getters['roles/select']
   return (data ?? []).map((item: any) => ({
     label: item.name,
-    value: Number(item.id_role), // ⬅️ asegura tipo numérico
+    value: Number(item.id_role),
   }))
 })
 
-// Getter con la vista del usuario
 const view = computed(() => store.getters['users/view'])
 
-// Carga de roles y (si hay id) del usuario
 const selectRoles = async () => {
   await store.dispatch('roles/select')
 }
@@ -211,7 +194,6 @@ async function load() {
   }
 }
 
-// 🔁 Cuando cambie `view`, poblar el formulario (no seteamos password desde backend)
 watch(
   view,
   (val: any) => {
@@ -230,13 +212,12 @@ watch(
       username: (val.username ?? val.user ?? '').toString(),
       email: (val.email ?? '').toString(),
       phone: (val.phone ?? val.telefono ?? '').toString(),
-      password: '', // mantenerla vacía; es opcional
+      password: '', 
     })
   },
   { immediate: true }
 )
 
-// Submit
 const onSubmit = handleSubmit(
   async (values) => {
     try {
@@ -258,7 +239,6 @@ const onSubmit = handleSubmit(
   () => {}
 )
 
-// Snackbars
 const snackbar = reactive({
   success: { open: false, msg: '' },
   error: { open: false, msg: '' },

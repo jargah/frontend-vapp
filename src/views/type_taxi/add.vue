@@ -11,7 +11,6 @@
             <Form @submit="onSubmit">
                 <v-card-text>
                     <v-row dense>
-                        <!-- name -->
                         <v-col cols="12" md="6">
                             <v-text-field v-model="name" label="Nombre" variant="outlined" autocomplete="off"
                                 :error="!!errors.name" :error-messages="errors.name ? [errors.name] : []"
@@ -52,11 +51,7 @@ const router = useRouter()
 const store = useStore()
 const saving = ref(false)
 
-// Validación mínima para { name: string }
-// - requerido
-// - sin espacios a los lados
-// - colapsa espacios internos
-// - longitud sugerida 2..120
+
 const schema = yup.object({
     name: yup
         .string()
@@ -80,8 +75,6 @@ const onSubmit = handleSubmit(
         try {
             saving.value = true
 
-            // values === { name: '...' }
-            // Ajusta el action/ruta según tu módulo Vuex y tus rutas reales:
             const result = await store.dispatch('typeTaxi/create', values)
 
             if (!result) {
@@ -90,14 +83,12 @@ const onSubmit = handleSubmit(
                 return
             }
 
-            // Intenta detectar id devuelto (id o id_config)
             const newId = result?.id ?? result?.id_config
             if (newId) {
                 router.push({ name: 'type-taxi-view', params: { id: newId } })
             } else {
                 snackbar.success.msg = 'Creado correctamente.'
                 snackbar.success.open = true
-                // fallback a listado si no hay id
                 router.push({ name: 'type-taxi-list' })
             }
         } catch (e: any) {

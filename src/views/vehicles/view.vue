@@ -86,7 +86,6 @@ const id = ref<number>(Number(route.params.id))
 const loading = ref(true)
 const error = ref<string | null>(null)
 
-// Getter del store (ajusta si tu módulo usa otro getter)
 const view = computed(() => store.getters['vehicles/view'])
 
 async function load() {

@@ -1,7 +1,6 @@
-// directiva: permite letras, números y espacios
 export default {
     mounted(el, binding) {
-        const regex = /^[a-zA-Z0-9 ]*$/   // letras, números, espacio
+        const regex = /^[a-zA-Z0-9 ]*$/
         const max = binding.value?.max ?? null
 
         function sanitize(value) {

@@ -11,6 +11,7 @@ import typeMotor from './modules/type_motor'
 import typePayment from './modules/type_payment'
 import typeTaxi from './modules/type_taxi'
 import travels from './modules/travels'
+import fleets from './modules/fleets'
 
 
 const Home = () => import('@/views/HomeView.vue')
@@ -56,6 +57,7 @@ const routes = [
     ...typePayment,
     ...typeTaxi,
     ...travels,
+    ...fleets,
     {
         path: '/:pathMatch(.*)*',
         name: 'not-found',
@@ -64,12 +66,6 @@ const routes = [
             public: true 
         },
     },
-    /* ...fleets,
-    ...operators,
-    ...passengers,
-    ...invoice,
-    ...referral,
-    ...settings */
 ]
 
 export const router = createRouter({
@@ -81,11 +77,9 @@ router.beforeEach(async (to) => {
 
     console.log(to)
 
-    // Recupera la sesión solo una vez al entrar
     store.commit('auth/GET_SESSION')
     const appid = store.getters['auth/appid']
 
-    // Si ya tienes appid y quieres refrescar perfil, hazlo aquí (opcional)
     if (appid) {
         try { await store.dispatch('auth/me') } catch (_) { }
     }
@@ -93,12 +87,10 @@ router.beforeEach(async (to) => {
 
     const isPublic = to.matched.some(r => r.meta?.public === true)
 
-    // No autenticado intentando ir a ruta privada → login
     if (!appid && !isPublic && to.name !== 'login') {
         return { name: 'login', replace: true }
     }
 
-    // Autenticado intentando ir a login/guest → home
     if (appid && (to.name === 'login' || to.meta?.guest === true)) {
         return { name: 'home', replace: true }
     }

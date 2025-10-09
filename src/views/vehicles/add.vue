@@ -12,7 +12,6 @@
             <Form @submit="onSubmit">
                 <v-card-text>
                     <v-row dense>
-                        <!-- name -->
                         <v-col cols="12" md="6">
                             <v-text-field 
                                 v-model="name" 
@@ -22,7 +21,6 @@
                                 :error="!!errors.name" :error-messages="errors.name ? [errors.name] : []" />
                         </v-col>
 
-                        <!-- branch -->
                         <v-col cols="12" md="6">
                             <v-text-field 
                                 v-model="branch" 
@@ -32,7 +30,6 @@
                                 :error="!!errors.branch" :error-messages="errors.branch ? [errors.branch] : []" />
                         </v-col>
 
-                        <!-- model -->
                         <v-col cols="12" md="6">
                             <v-text-field 
                                 v-model="model" 
@@ -101,7 +98,6 @@ const onSubmit = handleSubmit(
         try {
             saving.value = true
 
-            // Ajusta el action a tu módulo real si difiere:
             const result = await store.dispatch('vehicles/create', values)
 
             if (!result) {
@@ -113,7 +109,6 @@ const onSubmit = handleSubmit(
             snackbar.success.msg = 'Creado correctamente.'
             snackbar.success.open = true
 
-            // Redirección opcional: ajusta a tu ruta destino
             router.push({ name: 'vehicles-list' })
         } catch (e: any) {
             snackbar.error.msg = e?.message ?? 'No se pudo crear.'

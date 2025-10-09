@@ -1,4 +1,3 @@
-<!-- src/views/operators/view.vue (solo pego el archivo completo con el chip de estado) -->
 <template>
     <v-container fluid class="py-6">
         <div class="d-flex align-center justify-space-between mb-4 ga-3">
@@ -25,7 +24,6 @@
             </template>
 
             <template v-else>
-                <!-- Header -->
                 <v-card-item>
                     <div class="d-flex align-center ga-4">
                         <v-avatar size="56">
@@ -70,7 +68,6 @@
 
                 <v-card-text>
                     <v-row>
-                        <!-- Contacto / Operator -->
                         <v-col cols="12" md="6">
                             <v-sheet class="pa-4 rounded-lg border">
                                 <div class="text-overline mb-2">Información de contacto</div>
@@ -165,7 +162,6 @@
                             </v-sheet>
                         </v-col>
 
-                        <!-- Taxi -->
                         <v-col cols="12" md="6">
                             <v-sheet class="pa-4 rounded-lg border">
                                 <div class="text-overline mb-2">Vehículo / Taxi</div>
@@ -214,7 +210,6 @@
                             </v-sheet>
                         </v-col>
 
-                        <!-- Balance -->
                         <v-col cols="12" md="6">
                             <v-sheet class="pa-4 rounded-lg border">
                                 <div class="text-overline mb-2">Balance</div>
@@ -242,7 +237,6 @@
                             </v-sheet>
                         </v-col>
 
-                        <!-- Métricas -->
                         <v-col cols="12" md="6">
                             <v-sheet class="pa-4 rounded-lg border">
                                 <div class="text-overline mb-2">Métricas</div>
@@ -307,7 +301,7 @@ interface Operator {
     municipality?: string | null
     empresa_operador?: Empresa
     register_date?: string
-    status?: string | number | boolean   // <-- NUEVO
+    status?: string | number | boolean 
 }
 interface Taxi {
     empresa?: Empresa
@@ -358,7 +352,6 @@ async function load() {
     }
 }
 
-/* ------------ Helpers ------------ */
 function formatDate(iso?: string | null) {
     if (!iso) return '—'
     const d = new Date(iso)

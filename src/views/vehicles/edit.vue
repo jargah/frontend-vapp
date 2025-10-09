@@ -97,22 +97,18 @@ const { handleSubmit, errors, setValues } = useForm({
     },
 })
 
-// Campos → v-model
 const { value: name } = useField<string>('name')
 const { value: branch } = useField<string>('branch')
 const { value: model } = useField<string>('model')
 
-// Getter con la vista (ajusta si tu módulo usa otro getter)
 const view = computed(() => store.getters['vehicles/view'])
 
-// Cargar el recurso
 async function load() {
     if (!Number.isNaN(id.value)) {
         await store.dispatch('vehicles/view', id.value)
     }
 }
 
-// Poblar el formulario cuando llegue la data
 watch(
     view,
     (val: any) => {
@@ -131,7 +127,6 @@ const onSubmit = handleSubmit(
     async (values) => {
         try {
             saving.value = true
-            // Ajusta el action según tu store
             const result = await store.dispatch('vehicles/edit', { id: id.value, body: values })
 
             if (!result) {

@@ -1,4 +1,3 @@
-<!-- src/views/operators/view.vue -->
 <template>
     <v-container fluid class="py-6">
         <div class="d-flex align-center justify-space-between mb-4 ga-3">
@@ -25,7 +24,6 @@
             </template>
 
             <template v-else>
-                <!-- Header con resumen -->
                 <v-card-item>
                     <div class="d-flex align-center justify-space-between flex-wrap ga-4">
                         <div class="min-w-0">
@@ -125,7 +123,6 @@
                             </v-sheet>
                         </v-col>
 
-                        <!-- Métricas -->
                         <v-col cols="12" md="6">
                             <v-sheet class="pa-4 rounded-lg border">
                                 <div class="text-overline mb-2">Métricas</div>
@@ -182,7 +179,6 @@
                             </v-sheet>
                         </v-col>
 
-                        <!-- Pasajero -->
                         <v-col cols="12" md="6">
                             <v-sheet class="pa-4 rounded-lg border">
                                 <div class="text-overline mb-2">Pasajero</div>
@@ -228,7 +224,6 @@
                             </v-sheet>
                         </v-col>
 
-                        <!-- Taxi -->
                         <v-col cols="12" md="6">
                             <v-sheet class="pa-4 rounded-lg border">
                                 <div class="text-overline mb-2">Taxi</div>
@@ -300,7 +295,6 @@
                             </v-sheet>
                         </v-col>
 
-                        <!-- Ruta -->
                         <v-col cols="12" v-if="hasRoute">
                             <v-sheet class="pa-4 rounded-lg border">
                                 <div class="text-overline mb-2">Ruta</div>
@@ -308,15 +302,11 @@
                                 <GoogleMap ref="mapRef" 
                                     :api-key="apiKey" style="width: 100%; height: 500px"
                                     :center="center" :zoom="zoom" :disable-default-ui="true" :map-type-id="'roadmap'">
-                                    <!-- Polyline de la ruta -->
                                     <Polyline :options="polylineOptions" />
 
-                                    <!-- Origen -->
                                     <Marker :options="markerOptionsOrigin" />
-                                    <!-- Destino -->
                                     <Marker :options="markerOptionsDestination" />
 
-                                    <!-- Inicio / Fin reales -->
                                     <Circle v-if="startLatLng" :options="circleOptions(startLatLng)" />
                                     <Circle v-if="endLatLng" :options="circleOptions(endLatLng)" />
                                     <Marker v-if="endLatLng" :options="markerOptionsEnd" />
@@ -340,7 +330,6 @@ import { useRoute, useRouter } from 'vue-router'
 import { store } from '@/store'
 import { GoogleMap, Polyline, Circle, Marker } from 'vue3-google-map'
 
-/* --------- Tipos --------- */
 interface Service {
     id: number
     origin: string
@@ -413,7 +402,6 @@ interface ViewPayload {
 }
 type LatLng = { lat: number; lng: number }
 
-/* --------- Estado / carga --------- */
 const $route = useRoute()
 const router = useRouter()
 const id = ref<number>(Number($route.params.id))
@@ -422,19 +410,16 @@ const error = ref<string | null>(null)
 
 const view = computed<ViewPayload | null>(() => store.getters['serviceTravel/view'] ?? null)
 
-/* --------- Helpers --------- */
 const toNum = (v: unknown) => {
     const n = typeof v === 'string' ? parseFloat(v) : Number(v)
     return Number.isFinite(n) ? n : 0
 }
 const truthy = (v: unknown) => v === true || v === 1 || v === '1'
 
-/* --------- Origen/Destino --------- */
 const service = computed(() => view.value?.service ?? null)
 const origin = computed<LatLng>(() => ({ lat: toNum(service.value?.latitud_origin), lng: toNum(service.value?.longitud_origin) }))
 const destination = computed<LatLng>(() => ({ lat: toNum(service.value?.latitud_destination), lng: toNum(service.value?.longitud_destination) }))
 
-/* --------- Ruta limpia --------- */
 const routePoints = computed<LatLng[]>(() =>
     (view.value?.route ?? [])
         .map(p => ({ lat: toNum(p.latitude), lng: toNum(p.longitude) }))
@@ -442,18 +427,15 @@ const routePoints = computed<LatLng[]>(() =>
 )
 const hasRoute = computed(() => routePoints.value.length > 0)
 
-/* --------- Inicio / Fin reales --------- */
 const startLatLng = computed<LatLng | null>(() => (hasRoute.value ? routePoints.value[0] : null))
 const endLatLng = computed<LatLng | null>(() => (hasRoute.value ? routePoints.value[routePoints.value.length - 1] : null))
 
-/* --------- Etiquetas --------- */
 const passengerName = computed(() => {
     const p = view.value?.passenger
     const parts = [p?.first_name, p?.last_name, p?.second_surname].filter(Boolean)
     return parts.join(' ').trim() || 'Pasajero'
 })
 
-/* --------- Centro/zoom --------- */
 function midpoint(a: LatLng, b: LatLng): LatLng { return { lat: (a.lat + b.lat) / 2, lng: (a.lng + b.lng) / 2 } }
 function bboxCenter(points: LatLng[]): LatLng {
     const lats = points.map(p => p.lat)
@@ -465,7 +447,6 @@ function bboxCenter(points: LatLng[]): LatLng {
 const center = computed<LatLng>(() => (hasRoute.value ? bboxCenter(routePoints.value) : midpoint(origin.value, destination.value)))
 const zoom = ref(14.5)
 
-/* --------- Map & fitBounds (sin tipar google) --------- */
 const mapRef = ref<InstanceType<typeof GoogleMap> | null>(null)
 function fitBounds() {
     const map = mapRef.value?.map
@@ -482,7 +463,6 @@ onMounted(() => nextTick(fitBounds))
 watch(routePoints, () => nextTick(fitBounds))
 watch([origin, destination], () => nextTick(fitBounds))
 
-/* --------- Polyline & Circle --------- */
 const polylineOptions = computed(() => ({
     path: routePoints.value,
     geodesic: true,
@@ -499,7 +479,6 @@ const circleOptions = (center: LatLng) => ({
     fillOpacity: 0.35
 })
 
-/* --------- Marker options (evita error de tipos) --------- */
 const markerOptionsOrigin = computed(() => ({
     position: origin.value,
     label: { text: 'Origen', color: '#08103A', fontSize: '12px' }
@@ -515,10 +494,8 @@ const markerOptionsEnd = computed(() => ({
     label: { text: passengerName.value, color: '#08103A', fontSize: '12px' }
 }) as any)
 
-/* --------- API Key --------- */
 const apiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY
 
-/* --------- Carga de datos --------- */
 onMounted(load)
 watch(() => $route.params.id, (val) => { id.value = Number(val); load() })
 
@@ -533,7 +510,6 @@ async function load() {
     }
 }
 
-/* --------- Helpers formato --------- */
 function formatDateTime(iso?: string | null) {
     if (!iso) return '—'
     const d = new Date(iso)

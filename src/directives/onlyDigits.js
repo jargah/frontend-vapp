@@ -1,4 +1,3 @@
-// src/directives/onlyDigits.js
 export const vOnlyDigits = {
     mounted(el, binding) {
         const input = el.querySelector('input')

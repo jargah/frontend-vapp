@@ -7,8 +7,6 @@
                 <v-btn variant="text" prepend-icon="mdi-arrow-left" @click="goBack">Volver</v-btn>
                 <h1 class="text-h5 mb-0">Detalle Usuario #{{ view?.id_user }}</h1>
             </div>
-            <!-- <v-btn color="primary" prepend-icon="mdi-pencil-outline"
-                :to="{ name: 'users-edit', params: { id } }">Editar</v-btn> -->
         </div>
 
         <v-card rounded="xl" elevation="8">

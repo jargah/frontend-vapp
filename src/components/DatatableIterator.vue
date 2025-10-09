@@ -1,4 +1,3 @@
-<!-- src/components/DataIteratorCards.vue -->
 <template>
     <div class="pa-4">
         <!-- Toolbar -->
@@ -17,14 +16,12 @@
             <v-divider />
 
             <v-data-iterator :items="list" :page="page" :items-per-page="rows" :loading="loading">
-                <!-- loading -->
                 <template v-slot:loader>
                     <div class="pa-6">
                         <v-skeleton-loader type="article@3" />
                     </div>
                 </template>
 
-                <!-- no data -->
                 <template #no-data>
                     <div class="pa-8 text-center">
                         <v-icon size="48" class="mb-3">mdi-database-off</v-icon>
@@ -34,7 +31,6 @@
                     </div>
                 </template>
 
-                <!-- default render: usa headers para empatar campos -->
                 <template #default="{ items }">
                     <v-container fluid class="py-4">
                         <v-row>
@@ -135,7 +131,6 @@
                     </v-container>
                 </template>
 
-                <!-- footer -->
                 <template #footer>
                     <div class="px-4 pb-4 d-flex align-center justify-space-between flex-wrap gap-3">
                         <div class="d-flex align-center gap-2">
@@ -150,7 +145,6 @@
             </v-data-iterator>
         </v-card>
 
-        <!-- Diálogo Eliminar -->
         <v-dialog v-model="dialog.open" max-width="520">
             <v-card rounded="lg" elevation="8">
                 <v-card-title class="d-flex align-center ga-3 py-2">
@@ -184,17 +178,17 @@ import { useDistance } from '@/composables/useDistance'
 import { useCurrency } from '@/composables/useCurrency'
 
 type Primitive = string | number | boolean | null | undefined
-type Row = Record<string, any> // permite anidados
+type Row = Record<string, any> 
 
 type Header = {
-    key: string                 // ruta: 'name' | 'user.name' | 'meta.creation'
+    key: string                 
     position?: string
     type?: string
-    title: string               // etiqueta visible
-    hidden?: boolean            // para no renderizar en la card
-    chip?: boolean              // mostrar como chip
-    class?: string              // clases extra en la línea
-    formatter?: (val: any, item: Row) => string // función de formateo
+    title: string              
+    hidden?: boolean            
+    chip?: boolean              
+    class?: string              
+    formatter?: (val: any, item: Row) => string
 }
 
 const props = defineProps<{
@@ -207,7 +201,7 @@ const props = defineProps<{
     itemKey?: string
     titleField?: string
     orderDesc?: boolean
-    headers?: Header[]          // NUEVO: describe qué campos mostrar
+    headers?: Header[]        
 }>()
 
 const {
@@ -253,9 +247,7 @@ const pageCount = computed<number>(() => {
     return Math.max(1, Math.ceil((total.value || 0) / r))
 })
 
-/** --------- Empatar headers -> qué se muestra en la card ---------- */
 const normalizedHeaders = computed<Header[]>(() => {
-    // Si no pasan headers: sugerimos unos básicos por compatibilidad
     if (!props.headers || props.headers.length === 0) {
         return [
             { key: titleField || 'title', title: 'Título' },
@@ -268,7 +260,6 @@ const normalizedHeaders = computed<Header[]>(() => {
 })
 
 const statusHeader = computed<Header | null>(() => {
-    // busca un header que parezca 'status'
     const h = normalizedHeaders.value.find(h => h.key === 'status' || /status$/i.test(h.key))
     return h ?? null
 })
@@ -277,7 +268,6 @@ const visibleContentHeaders = computed<Header[]>(() =>
     normalizedHeaders.value.filter(h => !h.hidden && h.key !== (titleField || 'title') && h.key !== 'status')
 )
 
-/** Utilidad: leer ruta anidada (e.g. 'user.name') */
 function getByPath(obj: any, path: string): any {
     if (!obj || !path) return undefined
     return path.split('.').reduce((acc, key) => (acc == null ? undefined : acc[key]), obj)
@@ -294,7 +284,6 @@ function getDisplayValue(item: Row, h: Header): string {
     return ''
 }
 
-/** ---------- Datatable params & fetch ---------- */
 function getParams() {
     return store.getters['ui/datatableParams']
 }
@@ -407,7 +396,6 @@ onBeforeMount(() => {
     fetchData()
 })
 
-// Exponer utilidades al padre si las necesitas
 defineExpose({ reload, fetchData })
 </script>
 

@@ -75,7 +75,6 @@ import { OperatorsService, type Operator } from '@/services/operators.service'
 
 const store = useStore()
 
-/** Tipo de fila que espera la tabla */
 type Prospect = {
     id: number | string
     first_name: string
@@ -87,7 +86,6 @@ type Prospect = {
     creation: string // ISO string
 }
 
-/** Encabezados alineados con las llaves del tipo Prospect */
 const headers = [
     { title: 'ID', key: 'id', width: 70 },
     { title: 'Nombre', key: 'first_name' },
@@ -112,15 +110,12 @@ const datatable = ref({
 const page = ref(1)
 const itemsPerPage = ref(10)
 
-/** Obtiene/actualiza la tabla desde Vuex */
 const listProspects = async () => {
     await store.dispatch('prospects/list', datatable.value)
 }
 
-/** Tipamos el resultado del getter para evitar unknown[] */
 const prospectData = computed<{ list: Prospect[] } | null>(() => {
     const res = store.getters['prospects/table']
-    // adapta si tu getter devuelve otra estructura
     return res ? (res as { list: Prospect[] }) : null
 })
 
@@ -139,7 +134,6 @@ function formatDate(iso: string) {
     }).format(d)
 }
 
-/* Eliminar (opcional, si lo usas con otra lista/servicio) */
 const deleteDialog = ref(false)
 const pendingItem = ref<Operator | null>(null)
 
@@ -150,12 +144,10 @@ function closeDelete() {
 async function confirmDelete() {
     if (!pendingItem.value) return
     await OperatorsService.remove(pendingItem.value.id)
-    // si tu fuente es Vuex, quizá quieras refrescar desde el store:
     await listProspects()
     closeDelete()
     snackbar.value = { open: true, msg: 'Operador eliminado.' }
 }
 
-/* Snackbar */
 const snackbar = ref({ open: false, msg: '' })
 </script>

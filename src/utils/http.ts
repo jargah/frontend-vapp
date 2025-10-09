@@ -34,17 +34,14 @@ export function setAuthToken(token?: string) {
     runtimeBearer = token;
 }
 
-/** Reemplaza completamente los headers por defecto */
 export function setDefaultHeaders(headers: HeadersMap | ((prev: HeadersMap) => HeadersMap)) {
     defaultHeaders = typeof headers === 'function' ? headers(defaultHeaders) : { ...headers };
 }
 
-/** Agrega/actualiza un header por defecto */
 export function addDefaultHeader(name: string, value: string) {
     defaultHeaders = { ...defaultHeaders, [name]: value };
 }
 
-/** Elimina un header por defecto */
 export function removeDefaultHeader(name: string) {
     const copy = { ...defaultHeaders };
     delete copy[name];
@@ -70,7 +67,6 @@ function createAxios(): AxiosInstance {
         headers: { Accept: 'application/json' },
         transformRequest: [
             (data, headers) => {
-                // Si es FormData/Blob/File: dejar que el navegador/axios defina boundary y content-type
                 if (isFormLike(data)) {
                     if (headers) {
                         delete (headers as any)['Content-Type'];
@@ -89,23 +85,17 @@ function createAxios(): AxiosInstance {
     });
 
     instance.interceptors.request.use((config) => {
-        // Asegurar objeto headers
         const h = (config.headers = (config.headers ?? {}) as any);
 
-        // 1) No sobreescribir headers ya definidos en la petición
-        // Authorization
         if (!h.Authorization && !h.authorization) {
             const token = runtimeBearer ?? ENV_BEARER;
             if (token) h.Authorization = `Bearer ${token}`;
         }
 
-        // reference
         if (!h.reference && ENV_REFERENCE) {
             h.reference = ENV_REFERENCE;
         }
 
-        // 2) Mergear headers globales por defecto solo si no existen en la petición
-        //    (prioridad: por-petición > global > env/auto)
         for (const [k, v] of Object.entries(defaultHeaders)) {
             if (!(k in h) && !(k.toLowerCase() in h)) {
                 h[k] = v;
@@ -120,7 +110,7 @@ function createAxios(): AxiosInstance {
 
 const api: AxiosInstance = createAxios();
 
-function mapEnvelope<T>(env: ServerEnvelope<T> | null): ClientResponse<T> | null{
+function mapEnvelope<T>(env: ServerEnvelope<T> | null): ClientResponse<T> | null {
     const r = env;
 
     if (r && r.status === 200 && r.data != null) {
@@ -157,7 +147,7 @@ export async function apiRequest<T = unknown>(
             method,
             params,
             data,
-            headers, // <- por-petición (máxima prioridad)
+            headers,
             ...(config || {}),
         });
         const env: ServerEnvelope<T> | null = res?.data ?? null;

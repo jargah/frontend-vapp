@@ -52,11 +52,6 @@ const router = useRouter()
 const store = useStore()
 const saving = ref(false)
 
-// Validación mínima para { name: string }
-// - requerido
-// - sin espacios a los lados
-// - colapsa espacios internos
-// - longitud sugerida 2..120
 const schema = yup.object({
     name: yup
         .string()
@@ -80,8 +75,6 @@ const onSubmit = handleSubmit(
         try {
             saving.value = true
 
-            // values === { name: '...' }
-            // Ajusta el action/ruta según tu módulo Vuex y tus rutas reales:
             const result = await store.dispatch('typeMotor/create', values)
 
             if (!result) {
@@ -90,14 +83,12 @@ const onSubmit = handleSubmit(
                 return
             }
 
-            // Intenta detectar id devuelto (id o id_config)
             const newId = result?.id ?? result?.id_config
             if (newId) {
                 router.push({ name: 'type-motor-view', params: { id: newId } })
             } else {
                 snackbar.success.msg = 'Creado correctamente.'
                 snackbar.success.open = true
-                // fallback a listado si no hay id
                 router.push({ name: 'type-motor-list' })
             }
         } catch (e: any) {

@@ -32,7 +32,7 @@ export type UIState = {
     datatable: Datatable
 }
 
-const savedTheme = (localStorage.getItem('theme') as 'light' | 'dark') || 'light'
+const savedTheme = (localStorage.getItem('theme') as 'light' | 'dark') || 'dark'
 
 export const ui: Module<UIState, any> = {
     namespaced: true,

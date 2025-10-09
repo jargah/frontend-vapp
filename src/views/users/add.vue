@@ -12,46 +12,39 @@
             <Form @submit="onSubmit">
                 <v-card-text>
                     <v-row dense>
-                        <!-- rol_id -->
                         <v-col cols="12" md="6">
                             <v-select v-model="rol_id" label="Roles" variant="outlined" :items="roles"
                                 item-title="label" item-value="value" :error="!!errors.rol_id"
                                 :error-messages="errors.rol_id ? [errors.rol_id] : []" />
                         </v-col>
 
-                        <!-- first_name -->
                         <v-col cols="12" md="6">
                             <v-text-field v-model="first_name" label="Nombre" variant="outlined" autocomplete="off"
                                 :error="!!errors.first_name"
                                 :error-messages="errors.first_name ? [errors.first_name] : []" />
                         </v-col>
 
-                        <!-- last_name -->
                         <v-col cols="12" md="6">
                             <v-text-field v-model="last_name" label="Apellido" variant="outlined" autocomplete="off"
                                 :error="!!errors.last_name"
                                 :error-messages="errors.last_name ? [errors.last_name] : []" />
                         </v-col>
 
-                        <!-- username -->
                         <v-col cols="12" md="6">
                             <v-text-field v-model="username" label="Usuario" variant="outlined" autocomplete="off"
                                 :error="!!errors.username" :error-messages="errors.username ? [errors.username] : []" />
                         </v-col>
 
-                        <!-- email -->
                         <v-col cols="12" md="6">
                             <v-text-field v-model="email" label="Email" variant="outlined" autocomplete="off"
                                 :error="!!errors.email" :error-messages="errors.email ? [errors.email] : []" />
                         </v-col>
 
-                        <!-- phone -->
                         <v-col cols="12" md="6">
                             <v-text-field v-model="phone" label="Teléfono" variant="outlined" autocomplete="off"
                                 :error="!!errors.phone" :error-messages="errors.phone ? [errors.phone] : []" />
                         </v-col>
 
-                        <!-- password (OBLIGATORIO) -->
                         <v-col cols="12" md="6">
                             <v-text-field v-model="password" :type="showPassword ? 'text' : 'password'"
                                 label="Contraseña" variant="outlined"
@@ -91,13 +84,11 @@ import { useStore } from 'vuex'
 import { Form, useForm, useField } from 'vee-validate'
 import * as yup from 'yup'
 
-// Router / Store
 const router = useRouter()
 const store = useStore()
 const saving = ref(false)
 const showPassword = ref(false)
 
-// Esquema con password OBLIGATORIO (8–128, sin espacios)
 const schema = yup.object({
     rol_id: yup.number().typeError('Seleccione un rol').required('Requerido'),
     first_name: yup.string().trim().min(2, 'Mínimo 2 caracteres').required('Requerido'),
@@ -117,7 +108,6 @@ const schema = yup.object({
         .test('no-spaces', 'No se permiten espacios', (val) => (val ?? '').indexOf(' ') === -1),
 })
 
-// useForm
 const { handleSubmit, errors } = useForm({
     validationSchema: schema,
     initialValues: {
@@ -127,7 +117,7 @@ const { handleSubmit, errors } = useForm({
         username: '',
         email: '',
         phone: '',
-        password: '', // <- agregado
+        password: '',
     },
 })
 
@@ -138,9 +128,8 @@ const { value: last_name } = useField<string>('last_name')
 const { value: username } = useField<string>('username')
 const { value: email } = useField<string>('email')
 const { value: phone } = useField<string>('phone')
-const { value: password } = useField<string>('password') // <- agregado
+const { value: password } = useField<string>('password')
 
-// Items del select
 const roles = computed(() => {
     const data = store.getters['roles/select']
     return (data ?? []).map((item: any) => ({ label: item.name, value: Number(item.id_role) }))
@@ -150,13 +139,11 @@ const selectRoles = async () => {
     await store.dispatch('roles/select')
 }
 
-// Submit
 const onSubmit = handleSubmit(
     async (values) => {
         try {
             saving.value = true
 
-            // values ya incluye password
             const result = await store.dispatch('users/create', values)
 
             if (!result) {
@@ -176,7 +163,6 @@ const onSubmit = handleSubmit(
     () => { }
 )
 
-// Snackbars
 const snackbar = reactive({
     success: { open: false, msg: '' },
     error: { open: false, msg: '' },

@@ -1,4 +1,3 @@
-// src/composables/useS3Url.ts
 import { ref, onMounted } from 'vue'
 
 type Options = {
@@ -18,10 +17,8 @@ export function useS3Url({ keyOrUrl, presign = false, asBlob = false }: Options)
         loading.value = true
         error.value = null
         try {
-            // Si ya es URL completa y no hay que prefirmar
             const isFullUrl = /^https?:\/\//i.test(keyOrUrl)
 
-            // 1) Obtener URL
             let presigned = ''
             if (isFullUrl && !presign) {
                 presigned = keyOrUrl

@@ -27,7 +27,8 @@
                     <div class="d-flex align-center ga-4">
                         <v-avatar color="primary" size="56"><v-icon size="32">mdi-account-hard-hat</v-icon></v-avatar>
                         <div>
-                            <div class="text-h6">{{ view?.prospect?.nombre }} {{ view?.prospect?.apellido_paterno }} {{ view?.prospect?.apellido_materno }}</div>
+                            <div class="text-h6">{{ view?.prospect?.nombre }} {{ view?.prospect?.apellido_paterno }} {{
+                                view?.prospect?.apellido_materno }}</div>
                             <div class="text-medium-emphasis">ID: {{ view?.prospect?.id_prospecto }}</div>
                         </div>
                     </div>
@@ -60,30 +61,25 @@
                                     <span class="text-medium-emphasis">
                                         Status:
                                     </span>
-                                    <v-chip
-                                        size="small"
+                                    <v-chip size="small"
                                         :color="view?.prospect?.estatus === 'aprobado' ? 'success' : 'warning'">
-                                            {{ view?.prospect?.estatus}}
+                                        {{ view?.prospect?.estatus }}
                                     </v-chip>
                                 </div>
                                 <div class="d-flex justify-space-between m-1">
                                     <span class="text-medium-emphasis">
                                         Conductor:
                                     </span>
-                                    <v-chip
-                                        size="small"
-                                        :color="view?.prospect?.conductor ? 'success' : 'warning'">
-                                            {{ view?.prospect?.conductor ? 'Si': 'No'}}
+                                    <v-chip size="small" :color="view?.prospect?.conductor ? 'success' : 'warning'">
+                                        {{ view?.prospect?.conductor ? 'Si' : 'No' }}
                                     </v-chip>
                                 </div>
                                 <div class="d-flex justify-space-between m-1">
                                     <span class="text-medium-emphasis">
                                         Flotilla:
                                     </span>
-                                    <v-chip
-                                        size="small"
-                                        :color="view?.prospect?.flotilla? 'success' : 'warning'">
-                                            {{ view?.prospect?.flotilla ? 'Si': 'No'}}
+                                    <v-chip size="small" :color="view?.prospect?.flotilla ? 'success' : 'warning'">
+                                        {{ view?.prospect?.flotilla ? 'Si' : 'No' }}
                                     </v-chip>
                                 </div>
                                 <div class="d-flex justify-space-between m-1">
@@ -101,13 +97,14 @@
                             <v-sheet class="pa-4 rounded-lg border">
                                 <div class="text-overline mb-2">Datos Fiscales</div>
                                 <div class="d-flex justify-space-between"><span
-                                        class="text-medium-emphasis">RFC:</span><strong>{{ view?.documents.rfc }}</strong>
+                                        class="text-medium-emphasis">RFC:</span><strong>{{ view?.documents.rfc
+                                        }}</strong>
                                 </div>
                                 <div class="d-flex justify-space-between">
                                     <span class="text-medium-emphasis">
                                         Régimen:</span>
                                     <strong>
-                                        {{ view?.documents.regimen}}
+                                        {{ view?.documents.regimen }}
                                     </strong>
                                 </div>
                             </v-sheet>
@@ -122,45 +119,39 @@
                         </v-col>
 
                         <v-col cols="12" md="12" v-if="Object.keys(view?.documents).length > 0">
-                           
+
                             <v-sheet class="pa-4 rounded-lg border">
                                 <div class="text-overline mb-2">Visor Documentos</div>
-                                
+
                                 <div class="d-flex justify-space-between">
-                                    
+
                                     <v-row>
-                                       <template v-for="(key, index) in view?.documents">
-                                             <v-col cols="12" md="3" v-if="key != null">
-                                                <div class="text-body-1 text-center m-1" v-capital.word >
+                                        <template v-for="(key, index) in view?.documents">
+                                            <v-col cols="12" md="3" v-if="key != null">
+                                                <div class="text-body-1 text-center m-1" v-capital.word>
                                                     {{ index.toString().split('_').join(' ') }}
                                                 </div>
                                                 <div class="text-center m-1">
-                                                    
 
-                                                    <v-btn
-                                                        size="large"
-                                                        :href="key" target="_blank" rel="noopener"
-                                                    >
+
+                                                    <v-btn size="large" :href="key" target="_blank" rel="noopener">
                                                         <template v-slot:default>
-                                                            <Icon 
-                                                                icon="mdi:file-document" 
-                                                                :width="35" 
-                                                                style="cursor: pointer;"
-                                                            />
+                                                            <Icon icon="mdi:file-document" :width="35"
+                                                                style="cursor: pointer;" />
                                                         </template>
-                                                       
+
                                                     </v-btn>
                                                 </div>
                                             </v-col>
-                                       </template>
-                                        
+                                        </template>
+
                                     </v-row>
                                 </div>
-                                
+
                             </v-sheet>
                         </v-col>
                         <v-col cols="12" md="12" v-else="view?.documents">
-                           
+
                             <v-sheet class="pa-4 rounded-lg border">
                                 <div class="text-overline mb-2">No se han cargado documentos</div>
                             </v-sheet>
@@ -178,7 +169,7 @@
                                             <strong>Placas:</strong> {{ key.placa }}
                                         </v-col>
                                         <v-col cols="12" md="3">
-                                            <strong>Año:</strong> {{ key.anio}}
+                                            <strong>Año:</strong> {{ key.anio }}
                                         </v-col>
                                     </v-row>
                                 </v-sheet>
@@ -221,7 +212,7 @@ onMounted(() => {
     load()
 })
 
-watch(() => route.params.id, () => { 
+watch(() => route.params.id, () => {
     id.value = Number(route.params.id);
 })
 
@@ -234,12 +225,12 @@ async function load() {
 }
 function formatDate(iso: string) {
     const d = new Date(iso)
-    return new Intl.DateTimeFormat('es-MX', { 
+    return new Intl.DateTimeFormat('es-MX', {
         year: 'numeric',
-        month: '2-digit', 
-        day: '2-digit', 
-        hour: '2-digit', 
-        minute: '2-digit' 
+        month: '2-digit',
+        day: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit'
     }).format(d)
 }
 function goBack() {

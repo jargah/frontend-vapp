@@ -1,21 +1,16 @@
 <template>
     <div class="s3-viewer">
-        <!-- Loading -->
         <div v-if="loading" class="s3-viewer__loading">Cargando…</div>
 
-        <!-- Error -->
         <div v-else-if="error" class="s3-viewer__error">
             Error: {{ error }}
             <a v-if="directUrl" :href="directUrl" target="_blank" rel="noopener">Abrir directo</a>
         </div>
 
-        <!-- PDF -->
         <iframe v-else-if="isPdf && url" :src="url" class="s3-viewer__pdf" title="PDF" />
 
-        <!-- Imagen -->
         <img v-else-if="isImage && url" :src="url" alt="S3 Image" class="s3-viewer__img" />
 
-        <!-- Fallback -->
         <a v-else-if="url" :href="url" download :title="filename || 'download'">Descargar</a>
     </div>
 </template>
@@ -25,15 +20,10 @@ import { computed, onBeforeUnmount } from 'vue'
 import { useS3Url } from '@/composables/useS3Url'
 
 type Props = {
-    /** Puedes pasar un key de S3 (ej. 'docs/123/file.pdf') o una URL ya prefirmada */
     keyOrUrl: string
-    /** Si pasas un key y necesitas prefirmar, tu backend debe exponer /api/s3/presign?key=... */
     presign?: boolean
-    /** Si true, descarga como Blob y usa objectURL (oculta querystring) */
     asBlob?: boolean
-    /** Si quieres forzar el tipo (image/pdf) */
     mimeType?: string | null
-    /** Nombre sugerido para descarga */
     filename?: string | null
 }
 

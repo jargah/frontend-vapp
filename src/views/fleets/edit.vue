@@ -1,3 +1,4 @@
+<!-- src/views/operators/edit.vue -->
 <template>
     <v-container fluid class="py-6">
         <div class="d-flex align-center justify-space-between mb-4 ga-3">

@@ -1,4 +1,3 @@
-// src/directives/capital.ts
 import type { Directive, DirectiveBinding } from 'vue'
 
 type CapitalMode = 'upper' | 'word' | 'first' | 'sentence'
@@ -10,7 +9,7 @@ function detectMode(binding: DirectiveBinding<CapitalMode | undefined>): Capital
     if (m.word) return 'word'
     if (m.first) return 'first'
     if (m.sentence) return 'sentence'
-    return 'upper' // default
+    return 'upper'
 }
 
 
@@ -21,13 +20,11 @@ function transformValue(value: string, mode: CapitalMode): string {
         case 'first':
             return value.replace(/^\s*(\p{L})/u, (m) => m.toUpperCase())
         case 'word':
-            // Capitaliza la primera letra después de separadores comunes (incluye unicode NBSP)
             return value.replace(
                 /(^|[\s\u00A0"“”'‘’([{\-]+)(\p{L})/gu,
                 (_, p1: string, p2: string) => p1 + p2.toUpperCase()
             )
         case 'sentence':
-            // Después de . ! ? + espacios
             return value.replace(
                 /(^|[.!?]\s+)(\p{L})/gu,
                 (_, p1: string, p2: string) => p1 + p2.toUpperCase()
@@ -53,16 +50,13 @@ function write(el: HTMLElement, next: string) {
         const prev = input.value
         if (prev === next) return
         input.value = next
-        // Notificar a v-model
         input.dispatchEvent(new Event('input', { bubbles: true }))
-        // Mantener caret (la longitud no cambia con estas transformaciones)
         if (document.activeElement === input) {
             input.setSelectionRange(start, end)
         }
     } else if (el.isContentEditable) {
         if (el.textContent === next) return
         el.textContent = next
-        // Opcional: podrías emitir un CustomEvent si lo necesitas
     }
 }
 
@@ -101,11 +95,9 @@ export const vCapital: Directive<CapitalEl, CapitalMode | undefined> = {
 
         stateEl.__capitalHandlers__ = { onInput, onBlur, onCompStart, onCompEnd }
 
-        // Primer formateo inicial
         apply()
     },
     updated(el, binding) {
-        // Si cambió el modo en tiempo de ejecución
         if (binding.oldValue !== binding.value) {
             const mode = detectMode(binding)
             const curr = read(el)

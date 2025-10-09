@@ -17,8 +17,6 @@ export type AuthState = {
     user: Profile | null,
 }
 
-/* const token = localStorage.getItem('auth_token')
-const user = localStorage.getItem('auth_user') */
 
 export const auth: Module<AuthState, any> = {
     namespaced: true,

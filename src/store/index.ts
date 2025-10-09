@@ -11,6 +11,7 @@ import { typeMotor } from './modules/type_motor'
 import { typePayment } from './modules/type_payment'
 import { typeTaxi } from './modules/type_taxi'
 import { serviceTravel } from './modules/serviceTravel'
+import { fleets } from './modules/fleets'
 
 type DialogState = {
     type: string
@@ -34,7 +35,6 @@ type GlobalState = {
     alert: AlertState
 }
 
-// Tipar el store con GlobalState
 export const store = createStore<GlobalState>({
     state: () => ({
         dialog: { 
@@ -88,9 +88,9 @@ export const store = createStore<GlobalState>({
         typeMotor,
         typePayment,
         typeTaxi,
-        serviceTravel
+        serviceTravel,
+        fleets
     },
 })
 
-// RootState = GlobalState
 export type RootState = GlobalState

@@ -54,10 +54,8 @@ const router = useRouter()
 const store = useStore()
 const saving = ref(false)
 
-// id desde la ruta
 const id = ref<number>(Number(route.params.id))
 
-// Validación mínima para { name: string }
 const schema = yup.object({
     name: yup
         .string()
@@ -76,17 +74,14 @@ const { handleSubmit, errors, setValues } = useForm({
 
 const { value: name } = useField<string>('name')
 
-// Getter de la vista de la configuración actual (ajusta al getter real si difiere)
 const view = computed(() => store.getters['typeTaxi/view'])
 
-// Cargar la config si hay id
 async function load() {
     if (!Number.isNaN(id.value)) {
         await store.dispatch('typeTaxi/view', id.value)
     }
 }
 
-// Poblar el formulario cuando llegue la vista
 watch(
     view,
     (val: any) => {
@@ -98,13 +93,11 @@ watch(
     { immediate: true }
 )
 
-// Submit (editar)
 const onSubmit = handleSubmit(
     async (values) => {
         try {
             saving.value = true
 
-            // values === { name: '...' }
             const result = await store.dispatch('typeTaxi/edit', { id: id.value, body: values })
 
             if (!result) {
@@ -127,13 +120,11 @@ const onSubmit = handleSubmit(
     () => { }
 )
 
-// Snackbars
 const snackbar = reactive({
     success: { open: false, msg: '' },
     error: { open: false, msg: '' },
 })
 
-// Reaccionar a cambios de ruta (si navegas entre ids)
 watch(
     () => route.params.id,
     () => {

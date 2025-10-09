@@ -61,7 +61,6 @@ function goBack() {
 
 function goSearch() {
     if (!q.value) return
-    // Redirige a una ruta de búsqueda si existe en tu app
     router.push({ path: '/buscar', query: { q: q.value } })
 }
 </script>

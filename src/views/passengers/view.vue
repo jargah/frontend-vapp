@@ -1,4 +1,3 @@
-<!-- src/views/passengers/view.vue -->
 <template>
     <v-container fluid class="py-6">
         <div class="d-flex align-center justify-space-between mb-4 ga-3">
@@ -56,7 +55,6 @@
 
                 <v-card-text>
                     <v-row>
-                        <!-- Información de contacto (Passenger) -->
                         <v-col cols="12" md="6">
                             <v-sheet class="pa-4 rounded-lg border">
                                 <div class="text-overline mb-2">Información de contacto</div>
@@ -114,7 +112,6 @@
                             </v-sheet>
                         </v-col>
 
-                        <!-- Fiscal -->
                         <v-col cols="12" md="6">
                             <v-sheet class="pa-4 rounded-lg border">
                                 <div class="text-overline mb-2">Datos fiscales</div>
@@ -136,7 +133,6 @@
                             </v-sheet>
                         </v-col>
 
-                        <!-- Métricas -->
                         <v-col cols="12" md="6">
                             <v-sheet class="pa-4 rounded-lg border">
                                 <div class="text-overline mb-2">Métricas</div>
@@ -182,7 +178,6 @@ import { ref, onMounted, watch, computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { store } from '@/store'
 
-/** ===== Tipos basados en tu payload ===== */
 interface Passenger {
     id: number
     first_name: string
@@ -217,7 +212,6 @@ const id = ref<number>(Number(route.params.id))
 const loading = ref(true)
 const error = ref<string | null>(null)
 
-/** Importante: mantenemos el namespace del store 'passengers' */
 const view = computed<ViewPayload | null>(() => store.getters['passengers/view'] ?? null)
 
 onMounted(load)
@@ -241,7 +235,6 @@ async function load() {
     }
 }
 
-/* ------------ Helpers ------------ */
 function formatDateTime(iso?: string | null) {
     if (!iso) return '—'
     const d = new Date(iso)
