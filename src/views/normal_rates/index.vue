@@ -5,11 +5,11 @@
 
         <div class="d-flex align-center justify-space-between mb-4 ga-3">
             <div class="d-flex align-center ga-3">
-                <h1 class="text-h5 mb-0">Comisiones</h1>
+                <h1 class="text-h5 mb-0">Tarifas Normales</h1>
             </div>
         </div>
 
-        <template v-if="!commission">
+        <template v-if="!rates">
             <v-card rounded="xl" elevation="8">
                 <v-skeleton-loader type="card"></v-skeleton-loader>
             </v-card>
@@ -21,7 +21,7 @@
                 <Form @submit="onSubmit" :validation-schema="schema" v-slot="{ isSubmitting, values }">
                     <v-card-text>
                         <v-row dense>
-                            <v-col cols="12" md="6" v-for="(key, index) of commission" :key="index" >
+                            <v-col cols="12" md="6" v-for="(key, index) of rates" :key="index" >
                             
                                 <TextField 
                                     :label="key.label"
@@ -70,21 +70,21 @@ const { numRequired } = useTextField()
 const saving = ref(false)
 
 const schema = yup.object({
-    pctje_comision_operador: numRequired(0),
-    comision_operador: numRequired(0),
-    costo_cuota_translado: numRequired(0),
-    costo_incentivos: numRequired(0)
+    banderazo_tiempo_tradicional: numRequired(0),
+    banderazo_distancia_tradicional: numRequired(0),
+    banderazo_tarifa_tradicional: numRequired(0),
+    costo_250m_tradicional: numRequired(0),
+    costo_45seg_tradicional: numRequired(0)
 })
 
 
 const store = useStore()
 
-
-const commission = computed(() => store.getters['commissions/commissions'])
+const rates = computed(() => store.getters['normalRates/rates'])
 
 
 const loadData = async () => {
-    await store.dispatch('commissions/list')
+    await store.dispatch('normalRates/list')
 }
 
 
@@ -94,7 +94,7 @@ const onSubmit = async (values) => {
         const payload = []
 
         for(const key in values) {
-            const id = commission.value.find(item => item.name === key)?.id
+            const id = rates.value.find(item => item.name === key)?.id
             
             payload.push({
                 id,
@@ -102,7 +102,7 @@ const onSubmit = async (values) => {
             })
         }
 
-        await store.dispatch('commissions/edit', { fields: payload })
+        await store.dispatch('normalRates/edit', { fields: payload })
 
     } 
     catch (e: any) {

@@ -55,7 +55,8 @@
         </v-navigation-drawer>
 
         <v-main class="main-full">
-            <v-container fluid class="fill-height pa-4">
+            <!-- <v-container fluid class="fill-height pa-4"> Always Center screen-->
+                <v-container fluid>
                 <slot />
             </v-container>
         </v-main>
@@ -153,7 +154,9 @@ const baseItems: Item[] = [
         icon: 'mdi-cog-outline',
         children: [
             { title: 'Usuarios', to: { name: 'users-list' }, access: [1, 2, 4] },
-            { title: 'Comisiones', to: { name: 'config-commissions' }, access: [1, 2] }
+            { title: 'Comisiones', to: { name: 'config-commissions' }, access: [1, 2] },
+            { title: 'Tarifas Normales', to: { name: 'config-normal-rates' }, access: [1, 2] },
+            { title: 'Tarifas Ejecutivas', to: { name: 'config-executive-rates' }, access: [1, 2] }
         ],
     } as GroupItem,
 ]

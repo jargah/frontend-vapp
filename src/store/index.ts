@@ -13,6 +13,8 @@ import { typeTaxi } from './modules/type_taxi'
 import { serviceTravel } from './modules/serviceTravel'
 import { fleets } from './modules/fleets'
 import { commissions }  from './modules/commissions_fees'
+import { normalRates }  from './modules/normal_rates'
+import { executiveRates }  from './modules/executive_rates'
 
 type DialogState = {
     type: string
@@ -91,7 +93,9 @@ export const store = createStore<GlobalState>({
         typeTaxi,
         serviceTravel,
         fleets,
-        commissions
+        commissions,
+        normalRates,
+        executiveRates
     },
 })
 
