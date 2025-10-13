@@ -16,6 +16,7 @@ import { commissions }  from './modules/commissions_fees'
 import { normalRates }  from './modules/normal_rates'
 import { executiveRates }  from './modules/executive_rates'
 import { dailyRates }  from './modules/daily_rates'
+import { credentials } from './modules/credentials'
 
 type DialogState = {
     type: string
@@ -97,7 +98,8 @@ export const store = createStore<GlobalState>({
         commissions,
         normalRates,
         executiveRates,
-        dailyRates
+        dailyRates,
+        credentials
     },
 })
 

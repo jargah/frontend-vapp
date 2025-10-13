@@ -29,6 +29,11 @@ const configurations = [
                 name: 'config-daily-rates', 
                 component: () => import(/* webpackChunkName: "config-daily-rates" */ '@/views/daily_rates/index.vue'),
             },
+            {
+                path: 'credentials',
+                name: 'config-credentials',
+                component: () => import(/* webpackChunkName: "config-credentials" */ '@/views/credentials/index.vue'),
+            },
         ],
     }
 ]

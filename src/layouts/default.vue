@@ -157,7 +157,8 @@ const baseItems: Item[] = [
             { title: 'Comisiones', to: { name: 'config-commissions' }, access: [1, 2] },
             { title: 'Tarifas Diarias', to: { name: 'config-daily-rates' }, access: [1, 2] },
             { title: 'Tarifas Normales', to: { name: 'config-normal-rates' }, access: [1, 2] },
-            { title: 'Tarifas Ejecutivas', to: { name: 'config-executive-rates' }, access: [1, 2] }
+            { title: 'Tarifas Ejecutivas', to: { name: 'config-executive-rates' }, access: [1, 2] },
+            { title: 'Credenciales', to: { name: 'config-credentials' }, access: [1, 2] },
         ],
     } as GroupItem,
 ]
