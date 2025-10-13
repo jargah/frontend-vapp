@@ -155,6 +155,7 @@ const baseItems: Item[] = [
         children: [
             { title: 'Usuarios', to: { name: 'users-list' }, access: [1, 2, 4] },
             { title: 'Comisiones', to: { name: 'config-commissions' }, access: [1, 2] },
+            { title: 'Tarifas Diarias', to: { name: 'config-daily-rates' }, access: [1, 2] },
             { title: 'Tarifas Normales', to: { name: 'config-normal-rates' }, access: [1, 2] },
             { title: 'Tarifas Ejecutivas', to: { name: 'config-executive-rates' }, access: [1, 2] }
         ],
