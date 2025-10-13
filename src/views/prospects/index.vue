@@ -6,6 +6,7 @@
             url="administrator/prospects/list"
             :headers="headers"
             to-view="prospects-view"
+            url-delete="administrator/prospects/{id}/delete"
         />
     </v-container>
 </template>

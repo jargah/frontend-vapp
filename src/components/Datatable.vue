@@ -109,6 +109,7 @@
                                 color="error" 
                                 @click="openDeleted(item)" 
                             />
+                            
                         </div>
                     </template>
 
@@ -248,6 +249,8 @@ const openDeleted = (value) => {
 
 const deleted = async () => {
 
+    loading.value = true
+
     const url = props.urlDelete.replace('{id}', dialog.value.item.id)
     await store.dispatch('ui/datatableDelete', { url: url })
 
@@ -256,6 +259,8 @@ const deleted = async () => {
 
     const params = store.getters['ui/datatableParams']
     await store.dispatch('ui/datatable', { url: props.url, params })
+
+    
 }
 
 const formatDate = (iso: string) => {
