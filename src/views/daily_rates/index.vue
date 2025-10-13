@@ -5,11 +5,11 @@
 
         <div class="d-flex align-center justify-space-between mb-4 ga-3">
             <div class="d-flex align-center ga-3">
-                <h1 class="text-h5 mb-0">Comisiones</h1>
+                <h1 class="text-h5 mb-0">Tarifas Diarias</h1>
             </div>
         </div>
 
-        <template v-if="!commission">
+        <template v-if="!rates">
             <v-card rounded="xl" elevation="8">
                 <v-skeleton-loader type="card"></v-skeleton-loader>
             </v-card>
@@ -21,14 +21,13 @@
                 <Form @submit="onSubmit" :validation-schema="schema" v-slot="{ isSubmitting, values }">
                     <v-card-text>
                         <v-row dense>
-                            <v-col cols="12" md="6" v-for="(key, index) of commission" :key="index" >
+                            <v-col cols="12" md="6" v-for="(key, index) of rates" :key="index" >
                             
                                 <TextField 
                                     :label="key.label"
                                     :name="key.name"
                                     :model="key.value"
-                                    type="text"
-                                    v-only-number="{ max: 10, decimalsMax: 2 }"
+                                    :type="key.name.includes('inicio') || key.name.includes('fin') ? 'time' : 'text'"
                                 />
 
                             </v-col>
@@ -69,22 +68,36 @@ const { numRequired } = useTextField()
 
 const saving = ref(false)
 
+const hoursRequired = (message = 'La hora es obligatoria') => yup.string()
+    .required(message)
+    .matches(/^([01]?[0-9]|2[0-3]):[0-5][0-9]$/, 'Formato de hora inválido (HH:MM)')
+
 const schema = yup.object({
-    pctje_comision_operador: numRequired(0),
-    comision_operador: numRequired(0),
-    costo_cuota_translado: numRequired(0),
-    costo_incentivos: numRequired(0)
+    pctj_tarifa_nocturna: numRequired(0),
+    inicio_tarifa_nocturna: hoursRequired('La hora de inicio es obligatoria'),       
+    fin_tarifa_nocturna: hoursRequired('La hora de fin es obligatoria'),
+    pctj_tarifa_matutina_1: numRequired(0),
+    inicio_tarifa_matutina_1: hoursRequired('La hora de inicio es obligatoria'),
+    fin_tarifa_matutina_1: hoursRequired('La hora de fin es obligatoria'),
+    pctj_tarifa_matutina_2: numRequired(0),
+    inicio_tarifa_matutina_2: hoursRequired('La hora de inicio es obligatoria'),
+    fin_tarifa_matutina_2: hoursRequired('La hora de fin es obligatoria'),
+    pctj_tarifa_tarde_1: numRequired(0),
+    inicio_tarifa_tarde_1: hoursRequired('La hora de inicio es obligatoria'),
+    fin_tarifa_tarde_1: hoursRequired('La hora de fin es obligatoria'),
+    pctj_tarifa_tarde_2: numRequired(0),
+    inicio_tarifa_tarde_2: hoursRequired('La hora de inicio es obligatoria'),
+    fin_tarifa_tarde_2: hoursRequired('La hora de fin es obligatoria')
 })
 
 
 const store = useStore()
 
-
-const commission = computed(() => store.getters['commissions/commissions'])
+const rates = computed(() => store.getters['dailyRates/rates'])
 
 
 const loadData = async () => {
-    await store.dispatch('commissions/list')
+    await store.dispatch('dailyRates/list')
 }
 
 
@@ -94,7 +107,7 @@ const onSubmit = async (values) => {
         const payload = []
 
         for(const key in values) {
-            const id = commission.value.find(item => item.name === key)?.id
+            const id = rates.value.find(item => item.name === key)?.id
             
             payload.push({
                 id,
@@ -102,7 +115,7 @@ const onSubmit = async (values) => {
             })
         }
 
-        await store.dispatch('commissions/edit', { fields: payload })
+        await store.dispatch('dailyRates/edit', { fields: payload })
 
     } 
     catch (e: any) {

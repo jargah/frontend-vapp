@@ -2,23 +2,23 @@ import type { Module } from 'vuex'
 import { getJson, putJson, setDefaultHeaders } from '@/utils/http'
 import { useToastify } from '@/composables/useToastify'
 
-export type CommissionsFeeState = {
-    commission: any
+export type CredentialsState = {
+    rate: any
 }
 
 const toast = useToastify({ autoClose: 2000 })
 
-export const commissions: Module<CommissionsFeeState, any> = {
+export const credentials: Module<CredentialsState, any> = {
     namespaced: true,
     state: () => ({
-        commission: null
+        rate: null
     }),
     getters: {
-        commissions: (state) => state.commission
+        credentials: (state) => state.rate
     },
     mutations: {
-        SET_COMMISSION(state, payload) {
-            state.commission = payload
+        SET_CREDENTIALS(state, payload) {
+            state.rate = payload
         }
     },
     actions: {
@@ -28,20 +28,19 @@ export const commissions: Module<CommissionsFeeState, any> = {
                 'session': rootGetters['auth/token']
             })
 
-            const result = await getJson('/administrator/configuration/commission-fee')
+            const result = await getJson('/administrator/configuration/credentials')
 
             if(!result.success) {
                 commit('SET_ALERT', { 
                     open: true,
                     type: 'error',
-                    title: 'Usuarios',
-                    message: 'No se encontraron comisiones, intentalo nuevamente',
+                    title: 'Credenciales',
+                    message: 'No se encontraron credenciales, intentalo nuevamente',
                 }, { root: true })
                 return null
             }
 
-
-            commit('SET_COMMISSION', result.data)
+            commit('SET_CREDENTIALS', result.data)
         },
         async edit({ commit, rootGetters }, payload) {
 
@@ -49,7 +48,8 @@ export const commissions: Module<CommissionsFeeState, any> = {
                 'session': rootGetters['auth/token']
             })
 
-            const result = await putJson('/administrator/configuration/commission-fee', payload)
+            const result = await putJson('/administrator/configuration/credentials', payload)
+            console.log(result)
 
             if(!result.success) {
                 toast.error('Las configuraciones no se han actualizado')
