@@ -21,8 +21,13 @@ const configurations = [
             },
             { 
                 path: 'executive-rates', 
-                name: 'config-executive-rates', 
+                name: 'config-executive-rates',
                 component: () => import(/* webpackChunkName: "config-executive-rates" */ '@/views/executive_rates/index.vue'),
+            },
+            { 
+                path: 'daily-rates', 
+                name: 'config-daily-rates', 
+                component: () => import(/* webpackChunkName: "config-daily-rates" */ '@/views/daily_rates/index.vue'),
             },
         ],
     }

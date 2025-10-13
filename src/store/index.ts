@@ -15,6 +15,7 @@ import { fleets } from './modules/fleets'
 import { commissions }  from './modules/commissions_fees'
 import { normalRates }  from './modules/normal_rates'
 import { executiveRates }  from './modules/executive_rates'
+import { dailyRates }  from './modules/daily_rates'
 
 type DialogState = {
     type: string
@@ -95,7 +96,8 @@ export const store = createStore<GlobalState>({
         fleets,
         commissions,
         normalRates,
-        executiveRates
+        executiveRates,
+        dailyRates
     },
 })
 
