@@ -1,6 +1,6 @@
 <template>
     <v-container fluid>
-        <metric-cards 
+        <!-- <metric-cards 
             compact
             palette="gradient"
             :passengers="12840"
@@ -15,7 +15,10 @@
             canceled-color="error"
             :duration-ms="1400"    
         
-        />
+        /> -->
+        <p class="text-h3">
+            BIENVENIDO
+        </p>
     </v-container>
 </template>
 

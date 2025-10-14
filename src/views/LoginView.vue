@@ -10,7 +10,12 @@
                 </v-card-text>
                 <v-card class="pa-6" elevation="10" rounded="xl">
 
-                    <v-card-title class="text-h6 text-center">Iniciar sesión</v-card-title>
+                    <v-card-title class="text-h4 text-center mb-4">
+                        Bienvenido
+                        <v-chip color="red" v-if="environment !== 'production'">
+                            {{  environment  }}
+                        </v-chip>
+                    </v-card-title>
                     <v-card-text>
                         <Form 
                             :validation-schema="schema" 
@@ -90,4 +95,7 @@ async function onSubmit(values: LoginValues) {
         loading.value = false
     }
 }
+
+const environment = import.meta.env.VITE_APP_STAGE
+
 </script>

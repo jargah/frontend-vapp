@@ -9,6 +9,7 @@ export default defineConfig({
         vuetify({ autoImport: true })
     ],
     resolve: {
+        extensions: ['.vue', '.js', '.ts', '.json', '.png', '.jpeg', '.svg'],
         alias: {
             '@': fileURLToPath(new URL('./src', import.meta.url))
         },

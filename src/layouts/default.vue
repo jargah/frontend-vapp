@@ -4,7 +4,8 @@
         <v-app-bar :elevation="2">
             <v-app-bar-nav-icon @click="onNavClick" class="me-2" />
             <v-toolbar-title>
-                <v-img :src="logo" :width="140" />
+                <v-img :src="logo" :width="140" /> 
+                
             </v-toolbar-title>
             <v-spacer />
             <v-btn icon @click="toggleTheme" :aria-label="isDark ? 'Cambiar a claro' : 'Cambiar a oscuro'">
@@ -24,7 +25,16 @@
                     <div class="text-medium-emphasis">{{ user?.username }}</div>
                 </div>
                 <v-spacer />
+                <div class="d-flex align-center pa-4" v-if="environment !== 'production'">
+                    <v-chip color="red">
+                        <b>
+                            {{  environment  }}
+                        </b>
+                    </v-chip>
+                    <v-spacer />
+                </div>
             </div>
+            
 
             <v-divider />
 
@@ -106,6 +116,8 @@ function onLogout() {
     store.dispatch('auth/logout')
     router.push({ name: 'login' })
 }
+
+const environment = import.meta.env.VITE_APP_STAGE
 
 type AccessRoles = Array<number>
 type BaseItem = { title: string; icon: string; access?: AccessRoles }
