@@ -9,14 +9,7 @@ const fleets = [
             access: [1,2,3]
         },
         children: [
-            { 
-                path: '', 
-                name: 'fleets-list', 
-                component: () => import(/* webpackChunkName: "fleet-list" */ '@/views/fleets/index.vue'),
-                meta: {
-                    
-                }
-            },
+            
             // { 
             //     path: 'add', 
             //     name: 'fleets-add', 

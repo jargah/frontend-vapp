@@ -1,5 +1,5 @@
 import type { Module } from 'vuex'
-import { getJson, delJson, setDefaultHeaders } from '@/utils/http'
+import { getJson, delJson, setDefaultHeaders, downloadFile } from '@/utils/http'
 
 type DatatableParams = {
     datatable: boolean
@@ -133,6 +133,20 @@ export const ui: Module<UIState, any> = {
             );
 
             commit('SET_DATATABLE', result.data)
+        },
+        async excel({ commit, rootGetters }, payload) {
+            setDefaultHeaders({
+                'session': rootGetters['auth/token']
+            })
+
+            await downloadFile(
+                payload.url,
+                {
+                    params: payload.query,
+                    fallbackFilename: `prospectos_${new Date().getTime()}.xlsx`,
+                }
+                
+            );
         },
         async datatableDelete({ rootGetters }, payload) {
             setDefaultHeaders({

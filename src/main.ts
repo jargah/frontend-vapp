@@ -3,6 +3,7 @@ import App from '@/App.vue'
 import { store } from '@/store'
 import { router } from '@/router/index'
 import { vuetify } from '@/plugins/vuetify'
+import { VDateInput } from 'vuetify/labs/VDateInput'
 import '@/assets/styles/style.scss'
 import 'vue3-toastify/dist/index.css';
 
@@ -31,6 +32,8 @@ app.directive('alphanum-spaces-at', vAlphanumSpacesAt);
 
 app.component('auth-layout', AuthLayout)
 app.component('default-layout', DefaultLayout)
+
+app.component('v-date-input', VDateInput)
 
 app.use(Vue3Toastify, {
     autoClose: 3000,

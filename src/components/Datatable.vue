@@ -15,13 +15,14 @@
 
             <template v-slot:title>
                 <v-row class="d-flex justify-content-between">
-                    <v-col cols="6" class="m-3">
+                    <v-col cols="6" class="m-2">
                         <span class="font-weight-black">
                             {{ title }}
                         </span>
                     </v-col>
                     <v-col cols="4" class="d-flex align-items-center">
                         <v-text-field  
+                            density="compact"
                             placeholder="Buscador" 
                             variant="outlined"
                             autocomplete="off"
@@ -29,12 +30,62 @@
                         />
                     </v-col>
                 </v-row>
+                <v-row class="d-flex justify-content-between" v-if="excel">
+                    <v-col cols="12" md="7" class="m-2 d-flex justify-content-around">
+                       <v-date-input
+                            key="from"
+                            density="compact"
+                            label="Desde"
+                            clearable
+                            autocorrect="off"
+                            hide-details="auto"
+                            v-model="date_from"
+                            :rules="toRules"
+                            :max="date_to"
+                        />
+                        <div class="m-2" />
+                        <v-date-input
+                            key="to"
+                            density="compact" 
+                            label="Hasta"
+                            clearable
+                            autocorrect="off"
+                            hide-details="auto"
+                            v-model="date_to"
+                            :rules="fromRules"
+                            :min="date_from"
+                        />
+                    </v-col>
+                    <v-col cols="12" md="4" class="m-2 text-end">
+                        <v-btn
+                            v-if="date_from && date_to"
+                            class="text-none text-subtitle-1 mr-2"
+                            color="#5865f2"
+                            size="small"
+                            variant="flat"
+                            @click="exportExcel"
+                        >
+                            Exportar Excel
+                        </v-btn>
+                        
+                        <v-btn
+                            class="text-none text-subtitle-1 ml-2"
+                            color="blue"
+                            size="small"
+                            variant="flat"
+                            @click="relaunch"
+                        >
+                            Buscar
+                        </v-btn>
+                    </v-col>
+                    
+                </v-row>
                 <v-divider></v-divider>
             </template>
 
             <v-data-table-server 
-                :height="620"
                 fixed-header
+                fixed-footer
                 :headers="headers" 
                 :items="datatable.list ?? []" 
                 :items-length="total"
@@ -45,6 +96,86 @@
                 @update:items-per-page="setRows"
                 :loading="loading"
             >
+
+                <template
+                    v-for="col in headers"
+                    :key="col.key"
+                    v-slot:[`header.${col.key}`]="{ column, toggleSort, getSortIcon, isSorted }"
+                >
+
+                    <div class="flex items-center gap-1 text-center">
+                        <span class="text-body-1">
+                            {{ column.title }}
+                        </span>
+                    </div>
+                </template>
+
+                <template
+                    v-for="col in headers"
+                    :key="col.key"
+                    v-slot:[`item.${col.key}`]="{ item, value, column }"
+                    >
+                    <div class="flex items-center gap-1 text-center">   <!-- <- centro horizontal -->
+                        <span 
+                            v-if="column.key !== 'actions'" 
+                            class="inline-block max-w-[220px] truncate" 
+                            :title="String(value)"
+                        >
+                            <template v-if="(col as ExtraHeader)?.dataType == 'docs'">
+                                <template v-if="value == 0">
+                                    <v-chip color="red">NO</v-chip>
+                                </template>
+                                <template v-else>
+                                    <v-chip color="blue">SÍ</v-chip>
+                                </template>
+                            </template>
+                            <template v-else-if="(col as ExtraHeader)?.dataType == 'assign'">
+                                <template v-if="value == 'pendiente'">
+                                    <v-chip color="green">{{ value }}</v-chip>
+                                </template>
+                                
+                            </template>
+                            <template v-else>
+                                {{ value }}
+                            </template>
+                        </span>
+
+                        <div v-else class="flex justify-center gap-1">
+                            <div class="text-center">
+                                <v-btn 
+                                    v-if="toView !== ''"
+                                    :to="{ 
+                                        name: toView, 
+                                        params: { 
+                                            id: (item as any).id 
+                                        } 
+                                    }" 
+                                    icon="mdi-eye-outline"
+                                    variant="text" 
+                                />
+                                <v-btn 
+                                    v-if="toEdit !== ''"
+                                    :to="{ 
+                                        name: toEdit, 
+                                        params: { 
+                                            id: (item as any).id 
+                                        } 
+                                    }" 
+                                    icon="mdi-pencil-outline" 
+                                    variant="text" 
+                                />
+                                <v-btn 
+                                    v-if="urlDelete !== ''"
+                                    icon="mdi-trash-can-outline" 
+                                    variant="text" 
+                                    color="error" 
+                                    @click="openDeleted(item)" 
+                                />
+                                
+                            </div>
+                        </div>
+                    </div>
+                </template>
 
                 <template v-slot:loading>
                     <v-skeleton-loader type="table-row@10" />
@@ -68,7 +199,9 @@
                     </div>
                 </template>
 
-                <template #item.status="{ item }">
+            
+
+                <!-- <template #item.status="{ item }">
                     <v-chip 
                         size="small" 
                         :color="'info'">
@@ -115,7 +248,7 @@
 
                 <template #item.creation="{ item }">
                     {{ formatDate((item as any).creation) }}
-                </template>
+                </template> -->
         
             </v-data-table-server>
         </v-card>
@@ -158,20 +291,33 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref, watch, onBeforeMount } from 'vue'
+import type { DataTableHeader } from 'vuetify'
+import { computed, ref, watch, onBeforeMount, shallowRef } from 'vue'
+
 import { useStore } from 'vuex'
 import { debounce } from 'lodash-es'
 
-const props = defineProps({
-    url: String,
-    urlDelete: { type: String, default: '' },
-    title: String,
-    headers: { type: Array, default: () => [] },
-    toAdd: { type: String, default: '' },
-    toView: { type: String, default: '' },
-    toEdit: { type: String, default: '' }
-})
+type ExtraHeader = DataTableHeader & {
+    dataType?: any
+}
 
+const props = withDefaults(defineProps<{
+    url: string
+    excel?: string | null
+    urlDelete?: string
+    title?: string
+    headers: ExtraHeader[]
+    toAdd?: string
+    toView?: string
+    toEdit?: string
+}>(), {
+    excel: null,
+    urlDelete: null,
+    headers: () => [] as ExtraHeader[],
+    toAdd: '',
+    toView: '',
+    toEdit: ''
+})
 const store = useStore()
 
 const loading = ref(true)
@@ -180,6 +326,29 @@ const dialog = ref({
     message: '',
     item: null
 })
+const date_from = ref<string | null>(null)
+const date_to = ref<string | null>(null)
+const isValid = ref<boolean>(true)
+
+const fromRules = [
+    (v: string | null) => {
+        if (!v || !date_to.value) return true
+        return v >= date_to.value || 'From debe ser mayor o igual que date_to'
+    },
+]
+
+const toRules = [
+    (v: string | null) => {
+        if (!v || !date_from.value) return true
+        return v <= date_from.value || 'To no debe ser mayor que From'
+    },
+]
+
+// watch([date_from, date_to], ([newFrom, newTo]) => {
+//     if (newFrom && newTo && newTo > newFrom) {
+//         date_to.value = newFrom
+//     }
+// })
 
 const datatable = computed(() =>
     store.getters['ui/datatable'] ?? { list: [], meta: { total_items: 0, page: 1, rows: 10 } }
@@ -207,6 +376,8 @@ const rows = computed({
 })
 
 async function loadData(opts?: { page?: number; itemsPerPage?: number }) {
+
+
     if (opts?.page != null) page.value = opts.page
 
     if (opts?.itemsPerPage != null) {
@@ -216,6 +387,23 @@ async function loadData(opts?: { page?: number; itemsPerPage?: number }) {
 
     const params = store.getters['ui/datatableParams']
     await store.dispatch('ui/datatable', { url: props.url, params })
+}
+
+async function relaunch(opts?: { page?: number; itemsPerPage?: number }) {
+
+    loading.value = true
+
+    store.commit('ui/SET_DATATABLE_PARAMS_RESET')
+    const params = store.getters['ui/datatableParams']
+
+    if(date_from.value && date_to.value) {
+        params.date_from = date_from.value
+        params.date_to = date_to.value
+    }
+
+    await store.dispatch('ui/datatable', { url: props.url, params })
+    
+    loading.value = false
 }
 
 
@@ -242,6 +430,21 @@ const reload = async () => {
     loading.value = false
 }
 
+const exportExcel = async () => {
+
+    let params = {
+        date_from: undefined,
+        date_to: undefined
+    }
+    if(date_from.value && date_to.value) {
+        params.date_from = date_from.value
+        params.date_to = date_to.value
+    }
+
+
+    await store.dispatch('ui/excel', { url: props.excel, query: params })
+}
+
 const openDeleted = (value) => {
     dialog.value.open = true
     dialog.value.item = value
@@ -261,6 +464,10 @@ const deleted = async () => {
     await store.dispatch('ui/datatable', { url: props.url, params })
 
     
+}
+
+const setDates = (event) => {
+    console.log(event)
 }
 
 const formatDate = (iso: string) => {

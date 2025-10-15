@@ -22,7 +22,7 @@
         "noUnusedLocals": false,
         "noUnusedParameters": false,
         "erasableSyntaxOnly": true,
-        "noFallthroughCasesInSwitch": true,
+        "noFallthroughCasesInSwitch": false,
         "noUncheckedSideEffectImports": true,
         "baseUrl": ".",
         "paths": {

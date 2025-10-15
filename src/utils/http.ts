@@ -120,7 +120,9 @@ function mapEnvelope<T>(env: ServerEnvelope<T> | null): ClientResponse<T> | null
     } else if (r && r.status === 404) {
         return { status: r.status, success: false, error: [{ code: 404, message: 'Url not found' }] };
     } else if (r && r.status === 401 && r.errors != null) {
-        return { status: r.status, success: false, errors: r.errors, };
+        return { status: r.status, success: false, errors: r.errors };
+    } else if (typeof r === 'string') {
+        return { status: 200, success: true, data: r as T };
     } else {
         return { status: 500, success: false, data: null };
     }
@@ -150,6 +152,9 @@ export async function apiRequest<T = unknown>(
             headers,
             ...(config || {}),
         });
+
+        console.log(res.data);
+
         const env: ServerEnvelope<T> | null = res?.data ?? null;
         return mapEnvelope<T>(env)!;
     } catch (err) {
@@ -185,6 +190,191 @@ export const putForm = <T = unknown>(path: string, form: FormData | Blob | File,
 export const patchForm = <T = unknown>(path: string, form: FormData | Blob | File, params?: QueryParams, cfg?: AxiosRequestConfig) =>
     apiRequest<T>('PATCH', path, { data: form, params, config: cfg });
 
+/* =========================
+   Descarga de archivos (Excel/CSV/PDF) + manejo de JSON de error
+   ========================= */
+
+// Extrae filename del Content-Disposition (soporta filename* UTF-8)
+function parseFilenameFromDisposition(header?: string | null, fallback = 'download.bin'): string {
+    if (!header) return fallback;
+
+    const star = /filename\*\s*=\s*UTF-8''([^;]+)/i.exec(header);
+    if (star && star[1]) {
+        try { return decodeURIComponent(star[1].replace(/["]/g, '')); }
+        catch { return star[1].replace(/["]/g, '') || fallback; }
+    }
+
+    const normal = /filename\s*=\s*"?([^";]+)"?/i.exec(header);
+    if (normal && normal[1]) return normal[1].replace(/["]/g, '');
+    return fallback;
+}
+
+// Intenta leer un Blob como JSON de manera segura
+async function readBlobAsJsonSafe<T = any>(blob: Blob): Promise<T | null> {
+    try {
+        // Heurística rápida por content-type
+        const isLikelyJson =
+            (blob.type && blob.type.includes('application/json')) ||
+            blob.type === '' /* algunos backends no setean type */;
+        if (!isLikelyJson) return null;
+
+        const text = await blob.text();
+        if (!text) return null;
+
+        // Evita parsear binarios "raros"
+        const firstChar = text.trim().charAt(0);
+        if (!['{', '[', '"'].includes(firstChar)) return null;
+
+        return JSON.parse(text) as T;
+    } catch {
+        return null;
+    }
+}
+
+/**
+ * Devuelve el Blob del archivo sin forzar descarga; te da filename y header.
+ * Úsalo si quieres manejar el blob manualmente (File System Access API, etc.)
+ */
+export async function getFileBlob(
+    path: string,
+    {
+        method = 'GET',
+        params,
+        headers,
+        config,
+        fallbackFilename = 'download.bin',
+        withCredentials = false,
+    }: {
+        method?: HttpMethod,
+        params?: QueryParams,
+        headers?: HeadersMap,
+        config?: AxiosRequestConfig,
+        fallbackFilename?: string,
+        withCredentials?: boolean,
+    } = {}
+): Promise<{ blob: Blob; filename: string; disposition?: string | null }> {
+    const res = await api.request<Blob>({
+        url: path,
+        method,
+        params,
+        headers: {
+            Accept:
+                'application/octet-stream, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, text/csv, application/pdf, */*',
+            ...(headers || {}),
+        },
+        responseType: 'blob',
+        transformRequest: (d) => d, // no tocar JSON aquí
+        withCredentials,
+        ...(config || {}),
+    });
+
+    const disp = (res.headers['content-disposition'] as string | undefined) ?? null;
+    const filename = parseFilenameFromDisposition(disp, fallbackFilename);
+    return { blob: res.data, filename, disposition: disp };
+}
+
+/**
+ * Descarga directa en el navegador creando un link temporal.
+ */
+export async function downloadFile(
+    path: string,
+    opts?: Parameters<typeof getFileBlob>[1]
+): Promise<void> {
+    const { blob, filename } = await getFileBlob(path, opts);
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename || (opts?.fallbackFilename ?? 'download.bin');
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+}
+
+/**
+ * Intenta obtener un archivo; si el backend devuelve JSON de error (aun pidiendo blob),
+ * lo parsea y lo mapea con tu mapEnvelope para un flujo controlado.
+ *
+ * Retorna:
+ *  - { ok: true, filename, blob } si es archivo válido
+ *  - { ok: false, response } si el backend devolvió un JSON envelope de error
+ */
+export async function getFileOrEnvelope<T = unknown>(
+    path: string,
+    {
+        method = 'GET',
+        params,
+        headers,
+        config,
+        fallbackFilename = 'download.bin',
+        withCredentials = false,
+    }: {
+        method?: HttpMethod,
+        params?: QueryParams,
+        headers?: HeadersMap,
+        config?: AxiosRequestConfig,
+        fallbackFilename?: string,
+        withCredentials?: boolean,
+    } = {}
+): Promise<
+    | { ok: true; filename: string; blob: Blob }
+    | { ok: false; response: ClientResponse<T> }
+> {
+    try {
+        const res = await api.request<Blob>({
+            url: path,
+            method,
+            params,
+            headers: {
+                Accept:
+                    'application/octet-stream, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, text/csv, application/pdf, */*',
+                ...(headers || {}),
+            },
+            responseType: 'blob',
+            transformRequest: (d, h) => {
+                // Si mandas JSON explícitamente, respeta content-type:
+                if (h && (h['Content-Type'] || h['content-type'])) return JSON.stringify(d);
+                return d;
+            },
+            withCredentials,
+            ...(config || {}),
+        });
+
+        // ¿Pareciera JSON?
+        const maybeJson = await readBlobAsJsonSafe<ServerEnvelope<T>>(res.data);
+        if (maybeJson && typeof maybeJson.status === 'number') {
+            const mapped = mapEnvelope<T>(maybeJson)!;
+            return { ok: false, response: mapped };
+        }
+
+        const disp = (res.headers['content-disposition'] as string | undefined) ?? null;
+        const filename = parseFilenameFromDisposition(disp, fallbackFilename);
+        return { ok: true, filename, blob: res.data };
+    } catch (err) {
+        const ax = err as AxiosError<ServerEnvelope<T>>;
+        const blob = ax.response?.data as unknown as Blob | undefined;
+
+        // Si vino blob, quizá sea JSON de error
+        if (blob instanceof Blob) {
+            const maybeJson = await readBlobAsJsonSafe<ServerEnvelope<T>>(blob);
+            if (maybeJson) {
+                return { ok: false, response: mapEnvelope<T>(maybeJson)! };
+            }
+        }
+
+        const env = ax.response?.data ?? null;
+        if (env && typeof (env as any).status === 'number') {
+            return { ok: false, response: mapEnvelope<T>(env as ServerEnvelope<T>)! };
+        }
+
+        // Fallback genérico
+        return {
+            ok: false,
+            response: { status: 500, success: false, data: null, errors: ax.message },
+        };
+    }
+}
+
 export default {
     api,
     setAuthToken,
@@ -201,4 +391,8 @@ export default {
     postForm,
     putForm,
     patchForm,
+    // nuevos helpers:
+    getFileBlob,
+    downloadFile,
+    getFileOrEnvelope,
 };
